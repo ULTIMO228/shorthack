@@ -173,21 +173,20 @@ def get_admin_queue(
     Сортировка: priority (critical → high → medium → low), затем created_at по возрастанию.
     """
     stmt = (
-        select(Request, Ticket)
+        select(Request, Ticket, User)
         .join(Ticket, Ticket.request_id == Request.id)
+        .outerjoin(User, Request.user_id == User.id)
     )
     rows = db.execute(stmt).all()
 
     items: list[AdminQueueItem] = []
-    for req, ticket in rows:
+    for req, ticket, user_obj in rows:
         queue_user: QueueUser | None = None
-        if req.user_id is not None:
-            user_obj = db.get(User, req.user_id)
-            if user_obj:
-                queue_user = QueueUser(
-                    full_name=user_obj.full_name or "",
-                    email=user_obj.email or "",
-                )
+        if user_obj is not None:
+            queue_user = QueueUser(
+                full_name=user_obj.full_name or "",
+                email=user_obj.email or "",
+            )
 
         first_subtask = req.subtasks[0] if req.subtasks else None
         summary = first_subtask.summary if first_subtask and first_subtask.summary else (req.masked_text or req.raw_text or "")
