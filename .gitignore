@@ -5,10 +5,17 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+.coverage
+.pytest_cache/
+htmlcov/
 
 # App
 *.db
 .env
+.bot_offset
+*.bot_offset
+.bot_states
+*.bot_states
 
 # Node
 node_modules/

@@ -18,11 +18,11 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Создать backend/app/bot/main.py: точка входа `python -m app.bot.main`; цикл long polling (offset в памяти + файл backend/.bot_offset), backoff 1→60 c при сетевых ошибках, лог старта (`polling as @<username>`)
-- [ ] T002 [P] Создать backend/app/bot/tg.py: клиент Bot API — `getUpdates(timeout=30, allowed_updates=["message","callback_query"])`, `sendMessage`, `editMessageText`, `answerCallbackQuery`; обработка 429 (`retry_after`); разбиение текста >4096 по абзацам с суффиксом «(продолжение)»
-- [ ] T003 [P] Создать backend/app/bot/core_api.py: клиент REST ядра — cookie-сессии per chat_id (`POST /api/auth/login` после привязки), вызовы `/api/requests*`, `/api/certs/*`, `/api/internal/*` с заголовком `X-Bot-Token`; `CORE_API_URL` из env
-- [ ] T004 [P] Создать backend/app/bot/messages.py: ВСЕ тексты T1-T15 verbatim из contracts/bot-contract.md §2 (константы; правки текстов — только здесь)
-- [ ] T005 [P] Создать backend/app/bot/keyboards.py: inline-клавиатуры K1 (каталог справок, `cert:<type>` + `cert:my`) и K2 (`cert_order:<type>` / `noop`) из contracts/bot-contract.md §3
+- [x] T001 Создать backend/app/bot/main.py: точка входа `python -m app.bot.main`; цикл long polling (offset в памяти + файл backend/.bot_offset), backoff 1→60 c при сетевых ошибках, лог старта (`polling as @<username>`)
+- [x] T002 [P] Создать backend/app/bot/tg.py: клиент Bot API — `getUpdates(timeout=30, allowed_updates=["message","callback_query"])`, `sendMessage`, `editMessageText`, `answerCallbackQuery`; обработка 429 (`retry_after`); разбиение текста >4096 по абзацам с суффиксом «(продолжение)»
+- [x] T003 [P] Создать backend/app/bot/core_api.py: клиент REST ядра — cookie-сессии per chat_id (`POST /api/auth/login` после привязки), вызовы `/api/requests*`, `/api/certs/*`, `/api/internal/*` с заголовком `X-Bot-Token`; `CORE_API_URL` из env
+- [x] T004 [P] Создать backend/app/bot/messages.py: ВСЕ тексты T1-T15 verbatim из contracts/bot-contract.md §2 (константы; правки текстов — только здесь)
+- [x] T005 [P] Создать backend/app/bot/keyboards.py: inline-клавиатуры K1 (каталог справок, `cert:<type>` + `cert:my`) и K2 (`cert_order:<type>` / `noop`) из contracts/bot-contract.md §3
 
 ---
 
@@ -30,7 +30,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 **⚠️ Блокирует все user story**
 
-- [ ] T006 State machine в backend/app/bot/handlers.py + main.py: `GET /api/internal/tg/link?chat_id=` на каждый апдейт → маршрутизация по `state` (awaiting_email/awaiting_confirm/idle/dialog:<request_id>); непривязанный = гость: обращения разрешены, персональные функции → T16; диспетчер: команды (`/start /help /link /status /certs /cancel`) vs текст vs callback_query; фильтр `chat.type=="private"` (зависит T001-T005)
+- [x] T006 State machine в backend/app/bot/handlers.py + main.py: `GET /api/internal/tg/link?chat_id=` на каждый апдейт → маршрутизация по `state` (awaiting_email/awaiting_confirm/idle/dialog:<request_id>); непривязанный = гость: обращения разрешены, персональные функции → T16; диспетчер: команды (`/start /help /link /status /certs /cancel`) vs текст vs callback_query; фильтр `chat.type=="private"` (зависит T001-T005)
 
 **Checkpoint**: бот стартует, `/start` и `/help` отвечают (T1/T2) без ядровой логики обращений.
 
@@ -44,7 +44,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] В backend/app/bot/handlers.py — сценарий S2: текст в `idle` (привязанный или гость) → T9 → `POST /api/requests {"text", "channel":"telegram"}` (гость — без пользовательской сессии, ядро создаёт гостевую) → маппинг `reactions[]` по kind (T10/T11/T14/T16 для auth_required/текст как есть), `duplicate=true` → префикс «похоже на вашу заявку {number}», несколько подзадач → сообщения с префиксом `{i}/{n}:`; `clarification` → state=`dialog:<request_id>`; после первого гостевого обращения — одноразовое предложение привязаться (зависит T006)
+- [x] T007 [US1] В backend/app/bot/handlers.py — сценарий S2: текст в `idle` (привязанный или гость) → T9 → `POST /api/requests {"text", "channel":"telegram"}` (гость — без пользовательской сессии, ядро создаёт гостевую) → маппинг `reactions[]` по kind (T10/T11/T14/T16 для auth_required/текст как есть), `duplicate=true` → префикс «похоже на вашу заявку {number}», несколько подзадач → сообщения с префиксом `{i}/{n}:`; `clarification` → state=`dialog:<request_id>`; после первого гостевого обращения — одноразовое предложение привязаться (зависит T006)
 
 **Checkpoint**: полное обращение проходит в чате.
 
@@ -58,7 +58,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] В backend/app/bot/handlers.py — сценарий S1 (опциональная привязка): запуск по `/link` или из T16 → T3, state `awaiting_email` (валидация домена @misis.ru/@edu.misis.ru → `POST /api/internal/tg/link` → T4; иначе T5) → state `awaiting_confirm` (`POST /api/internal/tg/link/confirm`: ok → T6 + `core_api.login(email)`; неверный → T7 с счётчиком; attempts_exceeded → T8 + state=`awaiting_email`); `/status` и `/certs` без привязки → T16 + отказ (зависит T006)
+- [x] T008 [US2] В backend/app/bot/handlers.py — сценарий S1 (опциональная привязка): запуск по `/link` или из T16 → T3, state `awaiting_email` (валидация домена @misis.ru/@edu.misis.ru → `POST /api/internal/tg/link` → T4; иначе T5) → state `awaiting_confirm` (`POST /api/internal/tg/link/confirm`: ok → T6 + `core_api.login(email)`; неверный → T7 с счётчиком; attempts_exceeded → T8 + state=`awaiting_email`); `/status` и `/certs` без привязки → T16 + отказ (зависит T006)
 
 **Checkpoint**: новый пользователь привязывается, обращения идут от его профиля.
 
@@ -72,7 +72,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 3
 
-- [ ] T009 [US3] В backend/app/bot/handlers.py — сценарий S2b: state `dialog:<request_id>` → текст → `POST /api/requests/{id}/reply` → реакции как в S2; не-clarification → state=`idle`; `/cancel` → state=`idle` + «Текущее действие отменено»; 409 → state=`idle` + сообщение о завершении диалога (зависит T007)
+- [x] T009 [US3] В backend/app/bot/handlers.py — сценарий S2b: state `dialog:<request_id>` → текст → `POST /api/requests/{id}/reply` → реакции как в S2; не-clarification → state=`idle`; `/cancel` → state=`idle` + «Текущее действие отменено»; 409 → state=`idle` + сообщение о завершении диалога (зависит T007)
 
 **Checkpoint**: диалог из 2 раундов проходит без повторного описания.
 
@@ -86,7 +86,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 4
 
-- [ ] T010 [US4] В backend/app/bot/handlers.py — сценарий S4: `/certs` → каталог (`GET /api/certs/catalog`) сообщением с K1 + «Ваши заказы» (`GET /api/certs/orders`); callback `cert:<type>` → K2; `cert_order:<type>` → `POST /api/certs/orders` → T14 через `editMessageText`; `cert:my` → обновить список заказов; `/status` (S3): `GET /api/requests` → T12 или до 10 строк `{number} · {дата} · {status} · {summary}` + строка 🔴 при инциденте; `answerCallbackQuery` на все callback (зависит T006)
+- [x] T010 [US4] В backend/app/bot/handlers.py — сценарий S4: `/certs` → каталог (`GET /api/certs/catalog`) сообщением с K1 + «Ваши заказы» (`GET /api/certs/orders`); callback `cert:<type>` → K2; `cert_order:<type>` → `POST /api/certs/orders` → T14 через `editMessageText`; `cert:my` → обновить список заказов; `/status` (S3): `GET /api/requests` → T12 или до 10 строк `{number} · {дата} · {status} · {summary}` + строка 🔴 при инциденте; `answerCallbackQuery` на все callback (зависит T006)
 
 **Checkpoint**: заказ справки кнопками, паритет каналов (бот/сайт/админка).
 
@@ -100,7 +100,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 5
 
-- [ ] T011 [US5] В backend/app/bot/main.py — параллельный цикл outbox: каждые 10 c `GET /api/internal/outbound?status=pending` → `sendMessage` по `chat_id` записи (дежурный = `TG_DUTY_CHAT_ID`) → `POST /api/internal/outbound/{id}/ack {"status":"sent"}`; ошибка отправки → ack `failed` + лог; тексты не изменять (зависит T001, T002, T003)
+- [x] T011 [US5] В backend/app/bot/main.py — параллельный цикл outbox: каждые 10 c `GET /api/internal/outbound?status=pending` → `sendMessage` по `chat_id` записи (дежурный = `TG_DUTY_CHAT_ID`) → `POST /api/internal/outbound/{id}/ack {"status":"sent"}`; ошибка отправки → ack `failed` + лог; тексты не изменять (зависит T001, T002, T003)
 
 **Checkpoint**: инцидент доезжает дежурному ≤ 1 мин; ack-статусы корректны.
 
@@ -108,9 +108,9 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T012 [P] Создать backend/tests/test_bot_handlers.py: юнит-тесты без сети (моки tg.py/core_api.py) — разбор команд, переходы автомата (привязка, диалог, /cancel), форматирование /status и /certs, разбиение >4096, префиксы i/n и дубля
-- [ ] T013 Границы по контракту §5: фото/голос/файлы → «только текст»; группы → молчание; ядро недоступно → T13 без ретрая; рестарт бота → offset + перелогин прозрачно
-- [ ] T014 Полный прогон приёмочного чек-листа contracts/bot-contract.md §6 (7 пунктов) + quickstart.md (7 сценариев)
+- [x] T012 [P] Создать backend/tests/test_bot_handlers.py: юнит-тесты без сети (моки tg.py/core_api.py) — разбор команд, переходы автомата (привязка, диалог, /cancel), форматирование /status и /certs, разбиение >4096, префиксы i/n и дубля
+- [x] T013 Границы по контракту §5: фото/голос/файлы → «только текст»; группы → молчание; ядро недоступно → T13 без ретрая; рестарт бота → offset + перелогин прозрачно
+- [x] T014 Полный прогон приёмочного чек-листа contracts/bot-contract.md §6 (7 пунктов) + quickstart.md (7 сценариев)
 
 ---
 
