@@ -8,10 +8,18 @@
 - Обработку callback_query с обязательным answerCallbackQuery.
 """
 
+import json
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
+
+try:
+    from zoneinfo import ZoneInfo
+    MSK_TZ = ZoneInfo("Europe/Moscow")
+except Exception:
+    MSK_TZ = timezone(timedelta(hours=3))
 
 from app.bot.core_api import CoreApiClient, CoreApiConflictError, CoreApiError
 from app.bot.keyboards import (
@@ -47,18 +55,55 @@ from app.bot.tg import TelegramClient
 
 logger = logging.getLogger("bot.handlers")
 
+DEFAULT_STATES_FILE = Path(__file__).resolve().parent.parent.parent / ".bot_states"
+
+
+def load_states(path: Path | None = None) -> dict[int, str]:
+    """Чтение сохранённых локальных состояний чатов."""
+    p = path or DEFAULT_STATES_FILE
+    states: dict[int, str] = {}
+    try:
+        if p.is_file():
+            data = json.loads(p.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    if str(k).lstrip("-").isdigit() and isinstance(v, str):
+                        states[int(k)] = v
+    except Exception as exc:
+        logger.warning("Не удалось прочитать состояния из %s: %s", p, exc)
+    return states
+
+
+def save_states(states: dict[int, str], path: Path | None = None) -> None:
+    """Сохранение активных состояний чатов (dialog:*) в файл."""
+    p = path or DEFAULT_STATES_FILE
+    try:
+        data = {str(k): v for k, v in states.items() if v.startswith("dialog:")}
+        p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as exc:
+        logger.warning("Не удалось сохранить состояния в %s: %s", p, exc)
+
+
 # Локальное отслеживание состояний чатов (оверлей над ядром для dialog:<id> и /cancel)
-_chat_states: dict[int, str] = {}
+_chat_states: dict[int, str] = load_states()
 
 
-def reset_chat_states() -> None:
+def reset_chat_states(path: Path | None = None) -> None:
     """Сброс локальных состояний (для тестов)."""
     _chat_states.clear()
+    p = path or DEFAULT_STATES_FILE
+    try:
+        if p.is_file():
+            p.unlink(missing_ok=True)
+    except Exception:
+        pass
 
 
-def set_chat_state(chat_id: int, state: str) -> None:
-    """Установить текущее состояние пользователя."""
+def set_chat_state(chat_id: int, state: str, path: Path | None = None) -> None:
+    """Установить текущее состояние пользователя и сохранить активные диалоги."""
     _chat_states[chat_id] = state
+    save_states(_chat_states, path)
+
 
 
 def get_effective_state(chat_id: int, link_info: dict[str, Any]) -> str:
@@ -379,6 +424,8 @@ def handle_status_command(
         if created_at:
             try:
                 dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                if dt.tzinfo is not None:
+                    dt = dt.astimezone(MSK_TZ)
                 date_str = dt.strftime("%d.%m %H:%M")
             except Exception:
                 date_str = str(created_at)[:16]

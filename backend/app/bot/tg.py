@@ -78,6 +78,18 @@ class TelegramClient:
                     time.sleep(retry_after)
                     continue
 
+                if resp.status_code >= 500:
+                    logger.warning(
+                        "Telegram server error %s on %s (attempt %d/%d).",
+                        resp.status_code,
+                        endpoint,
+                        attempt + 1,
+                        max_retries,
+                    )
+                    if attempt < max_retries - 1:
+                        time.sleep(1.0 * (attempt + 1))
+                        continue
+
                 resp.raise_for_status()
                 payload = resp.json()
                 if not payload.get("ok"):
@@ -85,11 +97,12 @@ class TelegramClient:
                     raise RuntimeError(f"Telegram API error: {payload.get('description')}")
                 return payload
 
-            except (httpx.ConnectError, httpx.TimeoutException) as exc:
+            except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPStatusError) as exc:
                 if attempt == max_retries - 1:
-                    logger.error("Network error talking to Telegram: %s", exc)
+                    logger.error("Network or HTTP error talking to Telegram: %s", exc)
                     raise
                 time.sleep(1.0 * (attempt + 1))
+
 
         raise RuntimeError("Failed to execute request to Telegram Bot API after retries")
 

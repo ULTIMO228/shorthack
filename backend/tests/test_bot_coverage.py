@@ -17,6 +17,9 @@ from app.bot.handlers import (
     handle_dialog_text,
     handle_idle_text,
     handle_status_command,
+    load_states,
+    reset_chat_states,
+    save_states,
     set_chat_state,
 )
 from app.bot.main import (
@@ -554,4 +557,132 @@ def test_callback_cert_my_core_error():
     }
     handle_callback_query(cb, tg, core)
     tg.send_message.assert_called_once_with(12345, T13_SERVICE_UNAVAILABLE)
+
+
+def test_core_api_lru_eviction():
+    api = CoreApiClient(base_url="http://test:8000")
+    api._max_sessions = 2
+
+    c1 = api._get_user_client(1)
+    c2 = api._get_user_client(2)
+    assert len(api._sessions) == 2
+
+    # Обращение к c1 делает c2 самым старым
+    api._get_user_client(1)
+
+    with patch.object(c2, "close") as mock_close:
+        c3 = api._get_user_client(3)
+        mock_close.assert_called_once()
+        assert len(api._sessions) == 2
+        assert 2 not in api._sessions
+        assert 1 in api._sessions
+        assert 3 in api._sessions
+    api.close()
+
+
+def test_core_api_ensure_user_session_and_401_retry():
+    api = CoreApiClient(base_url="http://test:8000")
+    user_client = api._get_user_client(12345)
+
+    resp_401 = MagicMock(status_code=401)
+    resp_200 = MagicMock(status_code=200)
+    resp_200.json.return_value = {"ok": True, "request_id": 77}
+
+    with patch.object(user_client, "post", side_effect=[resp_401, resp_200]):
+        with patch.object(api, "get_tg_link", return_value={"ok": True, "email": "student@misis.ru"}):
+            with patch.object(api, "login", return_value={"ok": True}) as mock_login:
+                res = api.create_request(12345, "Проблема с личным кабинетом")
+                assert res["request_id"] == 77
+                mock_login.assert_called_once_with(12345, "student@misis.ru")
+
+
+def test_core_api_ensure_user_session_failures():
+    api = CoreApiClient(base_url="http://test:8000")
+
+    # Сбой при get_tg_link
+    with patch.object(api, "get_tg_link", side_effect=RuntimeError("DB err")):
+        assert api.ensure_user_session(111) is False
+
+    # Нет email в tg_link
+    with patch.object(api, "get_tg_link", return_value={"ok": False, "state": "awaiting_email"}):
+        assert api.ensure_user_session(111) is False
+
+    # Сбой при login
+    with patch.object(api, "get_tg_link", return_value={"ok": True, "email": "test@misis.ru"}):
+        with patch.object(api, "login", side_effect=CoreApiError(500, "Login fail")):
+            assert api.ensure_user_session(111) is False
+
+
+def test_tg_client_server_error_5xx_retry():
+    client = TelegramClient(token="TEST_TOKEN")
+    resp_502 = MagicMock(status_code=502)
+    resp_200 = MagicMock(status_code=200)
+    resp_200.json.return_value = {"ok": True, "result": {"username": "misis_bot"}}
+
+    with patch.object(client.http, "request", side_effect=[resp_502, resp_200]):
+        with patch("time.sleep") as mock_sleep:
+            me = client.get_me()
+            assert me["username"] == "misis_bot"
+            mock_sleep.assert_called_once_with(1.0)
+
+
+def test_bot_runner_outbox_thread_and_stop():
+    tg = MagicMock()
+    tg.get_me.return_value = {"username": "test_bot"}
+    core = MagicMock()
+    runner = BotRunner(tg_client=tg, core_client=core)
+
+    # Имитируем быстрый polling и остановку
+    def stop_runner(timeout=30):
+        runner.stop()
+        return 0
+
+    runner.run_polling_step = stop_runner
+    runner.run(start_outbox_thread=True)
+
+    assert runner.running is False
+    assert runner._outbox_thread is not None
+    assert runner._outbox_thread.is_alive() is False
+
+
+def test_handlers_state_persistence(tmp_path: Path):
+    test_state_file = tmp_path / ".test_bot_states"
+    reset_chat_states(path=test_state_file)
+
+    # Сохранение dialog:100
+    set_chat_state(12345, "dialog:100", path=test_state_file)
+    loaded = load_states(path=test_state_file)
+    assert loaded.get(12345) == "dialog:100"
+
+    # Сброс в idle не сохраняется в файл
+    set_chat_state(12345, "idle", path=test_state_file)
+    loaded_after = load_states(path=test_state_file)
+    assert 12345 not in loaded_after
+
+    # Поврежденный файл
+    test_state_file.write_text("not json content", encoding="utf-8")
+    assert load_states(path=test_state_file) == {}
+
+    reset_chat_states(path=test_state_file)
+    assert not test_state_file.is_file()
+
+
+def test_status_command_msk_timezone():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_my_requests.return_value = [
+        {
+            "id": 1,
+            "created_at": "2026-09-12T10:00:00Z",
+            "ticket": {"number": "SUP-999", "status": "открыта"},
+            "subtasks": [{"summary": "Вопрос по общежитию"}],
+        }
+    ]
+
+    handle_status_command(12345, tg, core)
+    tg.send_message.assert_called_once()
+    sent_text = tg.send_message.call_args[0][1]
+    # 10:00 UTC -> 13:00 MSK
+    assert "12.09 13:00" in sent_text
+    assert "SUP-999" in sent_text
 

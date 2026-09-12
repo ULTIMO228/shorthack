@@ -15,7 +15,8 @@
 - [x] Бот (фича 003): Фаза 6 (US4) T010 (/status, /certs, inline-клавиатуры K1/K2, заказ справок)
 - [x] Бот (фича 003): Фаза 7 (US5) T011 (фоновый цикл outbox дежурному, ack sent/failed)
 - [x] Бот (фича 003): Фаза 8 (Polish & Tests) T012–T014 (комплексные юнит- и интеграционные тесты)
-- [x] Тесты: 97/97 green (2 api + 17 bot phase 1 + 49 handlers + 6 outbox + 23 coverage suite, 99% app.bot)
+- [x] Бот (фича 003): Исправление код-ревью (авто-релогин сессий ядра, фоновый поток outbox, персистентность .bot_states, ретраи 5xx, батчинг offset, время МСК)
+- [x] Тесты: 104/104 green (2 api + 17 bot phase 1 + 49 handlers + 6 outbox + 30 coverage suite, 98% app.bot)
 - [x] GitHub private repo, main запушен
 - [x] .ai/ + .agents/ инфраструктура
 

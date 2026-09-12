@@ -8,6 +8,7 @@ import logging
 import os
 import signal
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -71,10 +72,13 @@ class BotRunner:
         self.offset: int | None = load_offset(self.offset_file)
         self.running = True
         self.backoff = 1.0
+        self._outbox_thread: threading.Thread | None = None
 
     def stop(self) -> None:
-        """Остановка цикла polling."""
+        """Остановка цикла polling и фонового потока outbox."""
         self.running = False
+        if self._outbox_thread and self._outbox_thread.is_alive():
+            self._outbox_thread.join(timeout=1.0)
 
     def process_update(self, update: dict[str, Any]) -> None:
         """Обработка одного update Telegram."""
@@ -95,12 +99,17 @@ class BotRunner:
             # При успешном сетевом запросе сбрасываем backoff
             self.backoff = 1.0
 
+            new_offset = self.offset
             for u in updates:
                 self.process_update(u)
                 update_id = u.get("update_id")
                 if update_id is not None:
-                    self.offset = update_id + 1
-                    save_offset(self.offset_file, self.offset)
+                    new_offset = update_id + 1
+
+            # Батчинг записи на диск: сохраняем offset один раз за пачку
+            if new_offset != self.offset and new_offset is not None:
+                self.offset = new_offset
+                save_offset(self.offset_file, self.offset)
 
             return len(updates)
 
@@ -154,7 +163,21 @@ class BotRunner:
 
         return count
 
-    def run(self) -> None:
+    def _outbox_loop(self) -> None:
+        """Фоновый поток периодического опроса исходящих сообщений дежурному (такт 10 с)."""
+        while self.running:
+            try:
+                self.run_outbox_step()
+            except Exception as exc:
+                logger.warning("Ошибка в фоновом цикле outbox: %s", exc)
+
+            # 10 секунд ожидания с короткими проверками флага running (0.5 с)
+            for _ in range(20):
+                if not self.running:
+                    break
+                time.sleep(0.5)
+
+    def run(self, start_outbox_thread: bool = True) -> None:
         """Главный бесконечный цикл long polling с безопасной остановкой."""
         try:
             me = self.tg.get_me()
@@ -165,18 +188,22 @@ class BotRunner:
 
         logger.info("polling as @%s", username)
 
-        last_outbox_check = 0.0
-        while self.running:
-            try:
-                now = time.time()
-                if now - last_outbox_check >= 10.0:
-                    self.run_outbox_step()
-                    last_outbox_check = now
+        if start_outbox_thread:
+            self._outbox_thread = threading.Thread(
+                target=self._outbox_loop,
+                name="bot-outbox-worker",
+                daemon=True,
+            )
+            self._outbox_thread.start()
 
+        try:
+            while self.running:
                 self.run_polling_step(timeout=30)
-            except KeyboardInterrupt:
-                logger.info("Получен сигнал прерывания. Завершение работы...")
-                break
+        except KeyboardInterrupt:
+            logger.info("Получен сигнал прерывания. Завершение работы...")
+        finally:
+            self.stop()
+
 
 
 def main() -> None:
