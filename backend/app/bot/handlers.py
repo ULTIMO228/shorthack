@@ -316,17 +316,36 @@ def handle_dialog_text(
     reactions = resp.get("reactions") or []
     ticket = resp.get("ticket") or {}
 
+    if not reactions:
+        set_chat_state(chat_id, "idle")
+        tg.send_message(chat_id, MSG_DIALOG_COMPLETED)
+        return
+
+    is_duplicate = bool(resp.get("duplicate"))
+    ticket_number = ticket.get("number") or str(req_id)
+
+    active_req_id = resp.get("request_id") or req_id
     has_clarification = False
     n = len(reactions)
     for i, rx in enumerate(reactions, 1):
         if rx.get("kind") == "clarification":
             has_clarification = True
+            if rx.get("request_id"):
+                active_req_id = rx.get("request_id")
+
         rx_msg = format_reaction_message(rx, ticket, req_id)
         if n > 1:
             rx_msg = f"{i}/{n}: {rx_msg}"
+
+        if is_duplicate and i == 1:
+            dup_prefix = MSG_DUPLICATE_PREFIX.format(number=ticket_number)
+            rx_msg = f"{dup_prefix}{rx_msg}"
+
         tg.send_message(chat_id, rx_msg)
 
-    if not has_clarification:
+    if has_clarification:
+        set_chat_state(chat_id, f"dialog:{active_req_id}")
+    else:
         set_chat_state(chat_id, "idle")
 
 

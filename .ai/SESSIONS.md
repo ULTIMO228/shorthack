@@ -41,3 +41,18 @@ Next:
   2. Интеграция фичи 003 со стендом ядра (001)
 ---
 
+## 2026-09-12T11:10:00+03:00 | @antigravity | branch:main | mode:normal
+Focus: Реализация и верификация Фазы 5 (User Story 3 / T009) — сценарий S2b уточняющего диалога
+Done: ✅
+  - handlers.py: доработка handle_dialog_text (пустой список реакций -> MSG_DIALOG_COMPLETED, динамический update request_id, дубликаты)
+  - test_bot_handlers.py: 4 новых теста (empty reactions, dynamic id, 503 retry state preservation, multi-turn e2e)
+  - Тесты: 74/74 green (13/13 dialog/cancel)
+  - tasks.md + SESSION_STATE.md синхронизированы
+Decisions: 🧠
+  - При пустом reactions чат переводится в idle с отправкой MSG_DIALOG_COMPLETED вместо зависания в молчании
+  - При 503/сетевом сбое ядра состояние диалога dialog:<id> не сбрасывается — пользователь может повторить попытку ввода
+Next:
+  1. Интеграция фичи 003 с ядром (001) и веб-кабинетом (002)
+  2. FIX L001+L002
+---
+

@@ -841,6 +841,171 @@ def test_dialog_reply_multiple_reactions_with_prefix():
     assert calls[1] == (12345, "2/2: Шаг 2: введите логин.")
 
 
+def test_dialog_reply_empty_reactions_resets_to_idle():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": True, "state": "idle", "user_id": 10}
+    set_chat_state(12345, "dialog:105")
+
+    core.reply_to_request.return_value = {"reactions": []}
+
+    update = {
+        "update_id": 36,
+        "message": {
+            "message_id": 46,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "Пустой ответ",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    tg.send_message.assert_called_once_with(12345, MSG_DIALOG_COMPLETED)
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "idle"
+
+
+def test_dialog_reply_updates_request_id_when_provided():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": True, "state": "idle", "user_id": 10}
+    set_chat_state(12345, "dialog:105")
+
+    core.reply_to_request.return_value = {
+        "request_id": 106,
+        "reactions": [
+            {"kind": "clarification", "text": "Уточните этаж в корпусе Б"}
+        ],
+    }
+
+    update = {
+        "update_id": 37,
+        "message": {
+            "message_id": 47,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "Корпус Б",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    tg.send_message.assert_called_once_with(12345, "Уточните этаж в корпусе Б")
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "dialog:106"
+
+
+def test_dialog_reply_503_preserves_dialog_state_for_retry():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": True, "state": "idle", "user_id": 10}
+    set_chat_state(12345, "dialog:105")
+
+    core.reply_to_request.side_effect = CoreApiError(503, "Service Unavailable")
+
+    update = {
+        "update_id": 38,
+        "message": {
+            "message_id": 48,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "Повторный ответ при ошибке сети",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    tg.send_message.assert_called_once_with(12345, T13_SERVICE_UNAVAILABLE)
+    # Состояние диалога не должно быть сброшено в idle при временном сбое
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "dialog:105"
+
+
+def test_dialog_full_multi_turn_e2e_scenario():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": True, "state": "idle", "user_id": 10}
+    reset_chat_states()
+
+    # Шаг 1: Пользователь в idle пишет о проблеме -> ядро возвращает clarification
+    core.create_request.return_value = {
+        "request_id": 201,
+        "ticket": {"number": "SUP-2026-0201"},
+        "reactions": [{"kind": "clarification", "text": "Укажите имя сети Wi-Fi"}],
+    }
+
+    update_1 = {
+        "update_id": 40,
+        "message": {
+            "message_id": 50,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "Не подключается Wi-Fi",
+        },
+    }
+    dispatch_update(update_1, tg, core)
+
+    # Проверяем переход в dialog:201
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "dialog:201"
+    core.create_request.assert_called_once_with(12345, "Не подключается Wi-Fi")
+
+    # Шаг 2: Пользователь отвечает в диалоге -> ядро задаёт второй уточняющий вопрос
+    core.reply_to_request.return_value = {
+        "request_id": 201,
+        "ticket": {"number": "SUP-2026-0201"},
+        "reactions": [{"kind": "clarification", "text": "Какая ошибка при вводе пароля?"}],
+    }
+
+    update_2 = {
+        "update_id": 41,
+        "message": {
+            "message_id": 51,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "Сеть MISIS-GUEST",
+        },
+    }
+    dispatch_update(update_2, tg, core)
+
+    core.reply_to_request.assert_called_once_with(12345, 201, "Сеть MISIS-GUEST")
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "dialog:201"
+
+    # Шаг 3: Пользователь отвечает на второй вопрос -> ядро даёт финальный ответ (answer)
+    core.reply_to_request.reset_mock()
+    core.reply_to_request.return_value = {
+        "ticket": {"number": "SUP-2026-0201"},
+        "reactions": [{"kind": "answer", "text": "Для MISIS-GUEST пароль не требуется, пройдите SMS-авторизацию."}],
+    }
+
+    update_3 = {
+        "update_id": 42,
+        "message": {
+            "message_id": 52,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "Пишет неверный пароль",
+        },
+    }
+    dispatch_update(update_3, tg, core)
+
+    core.reply_to_request.assert_called_once_with(12345, 201, "Пишет неверный пароль")
+    # Диалог завершён, автомат вернулся в idle
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "idle"
+
+    # Шаг 4: Следующее сообщение пользователя обрабатывается уже как НОВОЕ обращение в idle
+    core.create_request.reset_mock()
+    core.create_request.return_value = {
+        "request_id": 202,
+        "ticket": {"number": "SUP-2026-0202"},
+        "reactions": [{"kind": "answer", "text": "Новое обращение зарегистрировано."}],
+    }
+
+    update_4 = {
+        "update_id": 43,
+        "message": {
+            "message_id": 53,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "А ещё столовая закрыта",
+        },
+    }
+    dispatch_update(update_4, tg, core)
+
+    core.create_request.assert_called_once_with(12345, "А ещё столовая закрыта")
+    assert get_effective_state(12345, core.get_tg_link.return_value) == "idle"
+
+
 # --- US4: Справки и статус через бота (Фаза 6 / T010) ---
 
 
