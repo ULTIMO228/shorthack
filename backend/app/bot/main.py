@@ -111,6 +111,49 @@ class BotRunner:
             self.backoff = min(self.backoff * 2.0, 60.0)
             return 0
 
+    def run_outbox_step(self) -> int:
+        """Один шаг опроса очереди исходящих уведомлений дежурному (US5 / T011).
+
+        Возвращает количество успешно отправленных сообщений.
+        """
+        try:
+            messages = self.core.get_pending_outbound()
+        except Exception as exc:
+            logger.warning("Ошибка получения outbound сообщений: %s", exc)
+            return 0
+
+        count = 0
+        duty_chat_id_env = os.getenv("TG_DUTY_CHAT_ID")
+
+        for msg in messages:
+            msg_id = msg.get("id")
+            if msg_id is None:
+                continue
+
+            chat_id = msg.get("chat_id")
+            if not chat_id and duty_chat_id_env and duty_chat_id_env.strip().lstrip("-").isdigit():
+                chat_id = int(duty_chat_id_env.strip())
+
+            text = msg.get("text", "")
+            if not chat_id or not text:
+                self.core.ack_outbound(msg_id, "failed")
+                continue
+
+            try:
+                self.tg.send_message(chat_id, text)
+                self.core.ack_outbound(msg_id, "sent")
+                count += 1
+            except Exception as exc:
+                logger.warning(
+                    "Ошибка отправки outbound сообщения %s в чат %s: %s",
+                    msg_id,
+                    chat_id,
+                    exc,
+                )
+                self.core.ack_outbound(msg_id, "failed")
+
+        return count
+
     def run(self) -> None:
         """Главный бесконечный цикл long polling с безопасной остановкой."""
         try:
@@ -122,8 +165,14 @@ class BotRunner:
 
         logger.info("polling as @%s", username)
 
+        last_outbox_check = 0.0
         while self.running:
             try:
+                now = time.time()
+                if now - last_outbox_check >= 10.0:
+                    self.run_outbox_step()
+                    last_outbox_check = now
+
                 self.run_polling_step(timeout=30)
             except KeyboardInterrupt:
                 logger.info("Получен сигнал прерывания. Завершение работы...")
