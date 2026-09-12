@@ -1,0 +1,31 @@
+# SESSION STATE (Shorthack) — актуальное состояние
+
+> Обновлять В КОНЦЕ каждой сессии. Формат: что сделано / что горит / что дальше.
+
+## Последнее обновление: 2026-09-12T10:16:00+03:00
+
+## Готово ✅
+- [x] Backend: FastAPI + SQLite, 3 эндпоинта (shorten / redirect / stats)
+- [x] Frontend: React форма сокращения, тёмный UI
+- [x] Тесты 2/2 green
+- [x] GitHub private repo, main запушен
+- [x] .ai/ + .agents/ инфраструктура
+
+## Горит 🔥 (блокеры/баги)
+- L001: `/s/` prefix рассинхрон vite proxy ↔ backend short_url
+- L002: SQLAlchemy сессии без close()
+
+## В работе 🛠
+- (пусто)
+
+## Следующие шаги (приоритет)
+1. FIX L001+L002 — 30 мин
+2. Custom alias endpoint
+3. TTL / expiring links
+4. Аналитика кликов (referer)
+
+## Контекст для следующей сессии
+- Запуск: `cd backend && .venv/bin/uvicorn app.main:app --reload` + `cd frontend && npm run dev`
+- Тесты: `cd backend && .venv/bin/python -m pytest tests/ -v`
+- .venv бэкенда уже создан, НЕ коммитить
+- LESSONS.md читать ПЕРЕД правками — там 4 свежих ловушки

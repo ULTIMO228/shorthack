@@ -1,0 +1,21 @@
+services:
+  neo4j:
+    image: neo4j:5.26
+    container_name: shorthack-neo4j
+    ports:
+      - "7474:7474" # HTTP (браузерная консоль)
+      - "7687:7687" # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/shorthack_graphiti
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  neo4j_data:

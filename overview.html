@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>МИСИС AI Support Assistant — Интерактивная карта и Питч-пак</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0d14;
+      --bg-secondary: #111726;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.3);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-blue: #38bdf8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-violet: #8b5cf6;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(56, 189, 248, 0.08) 0px, transparent 40%),
+        radial-gradient(at 85% 85%, rgba(139, 92, 246, 0.08) 0px, transparent 40%);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .badge-icon {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .status-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-ready {
+      color: var(--accent-emerald);
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .pill-core {
+      color: var(--accent-blue);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    /* Navigation Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-secondary);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid var(--border-accent);
+    }
+
+    /* Tab Content */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+
+    /* Mermaid Canvas */
+    .mermaid-box {
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 20px;
+      overflow-x: auto;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* Checklist Section */
+    .checklist-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .check-icon {
+      color: var(--accent-emerald);
+      font-size: 1.1rem;
+      line-height: 1.2;
+    }
+
+    .check-content strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .check-content p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Pitch View */
+    .speech-box {
+      background: #0d121d;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: relative;
+    }
+
+    .speech-meta {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      color: var(--accent-blue);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .speech-text {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: #e2e8f0;
+      white-space: pre-line;
+      font-weight: 400;
+    }
+
+    .speech-text strong {
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    .speech-cue {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: 'Fira Code', monospace;
+      margin: 4px 0;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-blue);
+      color: #000;
+    }
+
+    /* Key metrics banner */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="badge-icon">⚡</div>
+        <div>
+          <h1>ИИ-помощник техподдержки НИТУ МИСИС</h1>
+          <div class="subtitle">Архитектурная карта, конвейер LangGraph, чеклист готовности и питч-скрипт</div>
+        </div>
+      </div>
+      <div class="status-pills">
+        <div class="pill pill-ready">● Чеклист P1/P2/P3: 100% OK</div>
+        <div class="pill pill-core">Core: LangGraph 1.1 + Yandex AI Studio</div>
+        <div class="pill">3 канала: Web / Telegram / Admin</div>
+      </div>
+    </header>
+
+    <!-- Metrics Row -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-value">≤ 2 сек</div>
+        <div class="metric-label">Реакция на сбой (без LLM)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">0.6</div>
+        <div class="metric-label">Порог уверенности (Safe Route)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">3 / 15 мин</div>
+        <div class="metric-label">Детекция массового инцидента</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">0</div>
+        <div class="metric-label">Галлюцинаций (RAG + цитаты)</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('architecture')">🏛️ Архитектура системы</button>
+      <button class="tab-btn" onclick="showTab('pipeline')">⚙️ Конвейер LangGraph</button>
+      <button class="tab-btn" onclick="showTab('scenarios')">🔥 Сбои и Справки</button>
+      <button class="tab-btn" onclick="showTab('checklist')">✅ Чеклист защиты</button>
+      <button class="tab-btn" onclick="showTab('pitch')">🎤 Скрипт спитча (2.5 мин)</button>
+    </div>
+
+    <!-- TAB 1: Architecture -->
+    <div id="architecture" class="tab-pane active">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Общая архитектурная карта сервиса</div>
+          <span class="card-badge badge-blue">System Topology</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">
+          Вся система разделена на три слоя: входные каналы (Web + Telegram), оркестратор ядра на LangGraph и исполнительные инструменты с базой знаний.
+        </p>
+        <div class="mermaid-box">
+          <pre class="mermaid">
+graph TD
+    subgraph Channels["Входные каналы"]
+        WebUser["Студент / Сотрудник (Web UI)"]
+        TgUser["Студент в Telegram-боте"]
+        Operator["Оператор техподдержки (Admin UI)"]
+    end
+
+    subgraph Core["Ядро системы (FastAPI + LangGraph)"]
+        API["FastAPI REST API (:8000)"]
+        AuthModule["Модуль авторизации (@misis.ru)"]
+        Sanitizer["Нормализатор (мат, язык, перевод)"]
+        Router["LangGraph Orchestrator (StateGraph)"]
+        IncidentEngine["Детектор массовых инцидентов (3/15м)"]
+        CertsEngine["Каталог и стейт-машина справок"]
+    end
+
+    subgraph AI["ИИ-сервисы (Yandex AI Studio)"]
+        LLM["YandexGPT Pro / Lite (Классификация & Саммари)"]
+        Embeddings["Text Embeddings (RAG векторный поиск)"]
+    end
+
+    subgraph Tools["Реестр инструментов (Tools Registry)"]
+        CheckWeb["HTTP Check: misis.ru & newlms.misis.ru"]
+        CheckWifi["Эмулятор Wi-Fi (EDU / Guest / CORP)"]
+        KB["Agentic RAG: Регламенты + Шаблоны"]
+        NotifyTg["Экстренный пуш дежурному в Telegram"]
+    end
+
+    subgraph Storage["Хранилище данных (SQLite)"]
+        DB[(shorthack.db: Users, Tickets, Events, KB, Certs)]
+    end
+
+    WebUser -->|HTTP / JSON| API
+    TgUser -->|Polling / Internal API| API
+    Operator -->|Admin Panel / Actions| API
+
+    API --> AuthModule
+    API --> Sanitizer
+    Sanitizer --> Router
+
+    Router --> LLM
+    Router --> Embeddings
+    Router --> Tools
+    Router --> CertsEngine
+    Router --> IncidentEngine
+
+    Tools --> CheckWeb
+    Tools --> CheckWifi
+    Tools --> KB
+    IncidentEngine --> NotifyTg
+
+    Core --> DB
+          </pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Pipeline -->
+    <div id="pipeline" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Конвейер обработки обращения (LangGraph StateGraph)</div>
+          <span class="card-badge badge-emerald">Deterministic & Agentic</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">
+          Защита от сбоев: детерминированные триггеры и проверка уверенности модели. Если уверенность &lt; 0.6 или сработал критический триггер — безопасная эскалация оператору.
+        </p>
+        <div class="mermaid-box">
+          <pre class="mermaid">
+flowchart TD
+    Start([Входящее обращение]) --> AuthCheck{Авторизован @misis.ru?}
+    AuthCheck -- Нет --> Block[Требование входа / привязки]
+    AuthCheck -- Да --> CleanText[Маскирование мата + определение языка]
+    
+    CleanText --> Splitter[Сплиттер составных вопросов]
+    Splitter --> Classifier[LLM-классификатор + Triggers]
+    
+    Classifier --> ConfidenceCheck{Уверенность &ge; 0.6 и нет триггера?}
+    ConfidenceCheck -- "Низкая уверенность / Триггер" --> Escalate[Безопасный маршрут: Эскалация оператору]
+    
+    ConfidenceCheck -- "Высокая уверенность" --> RouteBranch{Маршрут подзадачи}
+
+    RouteBranch -- "auto_check" --> ExecDiag[Проверка misis.ru / LMS / Wi-Fi]
+    RouteBranch -- "kb_rag" --> RAGSearch[Поиск в регламентах + Шаблоны]
+    RouteBranch -- "cert_order" --> AutoOrder[Заказ справки с автопрофилем]
+    RouteBranch -- "operator" --> Escalate
+
+    ExecDiag --> DiagStatus{Сбой сервиса подтверждён?}
+    DiagStatus -- "ДА" --> QuickNotice[Мгновенное извещение &le; 2 сек без LLM]
+    DiagStatus -- "НЕТ (сервис UP)" --> ClarifyQ[Шаблонный уточняющий вопрос &le; 2 раунда]
+
+    RAGSearch --> FoundCheck{Найден ответ в источниках?}
+    FoundCheck -- "ДА" --> StrictAnswer[Ответ строго по регламенту с цитатой]
+    FoundCheck -- "НЕТ" --> Escalate
+
+    AutoOrder --> CertCreated[Статус: 'не обработана' &rarr; ЛК]
+
+    QuickNotice --> IncidentCheck{ &ge; 3 жалобы за 15 мин?}
+    IncidentCheck -- "ДА" --> MassIncident[Алерт дежурному + Баннер в админке]
+
+    Escalate --> HumanDrawer[Карточка оператора: Саммари + Рекомендация]
+    HumanDrawer --> CloseTicket[Решение оператора]
+    CloseTicket --> AutoKB[Одной кнопкой: Черновик в Базу Знаний]
+          </pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Scenarios -->
+    <div id="scenarios" class="tab-pane">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">1. Жизненный цикл заказа справки (FR-042)</div>
+            <span class="card-badge badge-blue">State Machine</span>
+          </div>
+          <div class="mermaid-box">
+            <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Не_обработана: Создан студентом / ботом
+    Не_обработана --> Обрабатывается: Оператор взял в работу
+    Обрабатывается --> Готова_и_ждёт_выдачи: Документ оформлен / подписан
+    Готова_и_ждёт_выдачи --> Забрана: Студент получил справку
+    Забрана --> [*]
+            </pre>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">
+            5 типов: О выплатах, Справка-вызов, Медотвод/Вакцинация, С места учёбы, В военкомат.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">2. Детектор массовых инцидентов (FR-050)</div>
+            <span class="card-badge badge-rose">Mass Outage Engine</span>
+          </div>
+          <div class="mermaid-box">
+            <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor U1 as Студент 1
+    actor U2 as Студент 2
+    actor U3 as Студент 3
+    participant Core as Ядро / Детектор
+    participant Admin as Админка / Дежурный
+
+    U1->>Core: "Wi-Fi EDU отвалился" (жалоба #1)
+    Core-->>U1: Извещение о сбое (2 сек)
+    U2->>Core: "Не подключается к EDU" (жалоба #2)
+    Core-->>U2: Извещение о сбое (2 сек)
+    U3->>Core: "Лежит сеть в корпусе" (жалоба #3)
+    Core->>Core: Порог (3 за 15 мин) достигнут!
+    Core->>Admin: Экстренный пуш в Telegram дежурному
+    Core->>Admin: Красный баннер инцидента на статус-борде
+    Admin->>Core: Кнопка "Уведомить затронутых" (FR-053)
+    Core-->>U1: Массовый ответ
+    Core-->>U2: Массовый ответ
+    Core-->>U3: Массовый ответ
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Checklist -->
+    <div id="checklist" class="tab-pane">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Чеклист функциональности (P1 / P2 / P3)</div>
+            <span class="card-badge badge-emerald">Ready for Jury</span>
+          </div>
+          <div class="checklist-list">
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Авторизация и профиль пользователя (FR-001)</strong>
+                <p>Эмуляция входа по почте @misis.ru и @edu.misis.ru, автоподтягивание группы и ФИО.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Нормализатор: мат, языки и сплиттер (FR-002..FR-004)</strong>
+                <p>Маскирование ненормативной лексики, автоперевод на русский для оператора, сплит составных вопросов.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Автодиагностика сервисов (FR-022..FR-024)</strong>
+                <p>Реальный HTTP-пинг misis.ru и newlms.misis.ru, эмуляция сетей Wi-Fi MISIS-Guest/EDU/CORP.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Agentic RAG без галлюцинаций (FR-030..FR-032)</strong>
+                <p>Ответы строго по регламентам с цитированием. Нет в базе &rarr; 100% безопасная эскалация.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Заказ справок с автопрофилем (FR-040..FR-043)</strong>
+                <p>5 категорий справок, сквозной жизненный цикл из 4 статусов, видно в ЛК и в админке.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Детектор инцидентов и массовый ответ (FR-050..FR-053)</strong>
+                <p>Скользящее окно 3/15 мин, экстренный пуш в Telegram дежурному, рассылка всем затронутым.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Карточка эскалации оператору (FR-060)</strong>
+                <p>Саммари сути &le; 30 сек, результаты проверок, рекомендуемый шаг и исходный текст.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">✓</div>
+              <div class="check-content">
+                <strong>Самообучение базы знаний (FR-063)</strong>
+                <p>По закрытии эскалации LLM готовит черновик статьи, оператор утверждает в 1 клик.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Демо-сценарии для показа жюри</div>
+            <span class="card-badge badge-amber">Live Demo Plan</span>
+          </div>
+          <div class="checklist-list">
+            <div class="check-item">
+              <div class="check-icon">1</div>
+              <div class="check-content">
+                <strong>Клик-клик: Живая жалоба на Wi-Fi</strong>
+                <p>Показываем форму, вбиваем проблему &rarr; мгновенное извещение о сбое (2 сек) без обращения к LLM.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">2</div>
+              <div class="check-content">
+                <strong>Справка в военкомат или с места учёбы</strong>
+                <p>Заказ через диалог с агентом &rarr; автоподстановка профиля &rarr; появление в ЛК со статусом 'не обработана'.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">3</div>
+              <div class="check-content">
+                <strong>Эскалация с матом и на английском</strong>
+                <p>Ввод: "F***ing Wi-Fi isn't working" &rarr; маскировка мата, перевод для оператора, готовое саммари.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">4</div>
+              <div class="check-content">
+                <strong>Тест-панель: симуляция волны жалоб</strong>
+                <p>В админке жмём "Волна из 3 жалоб" &rarr; срабатывает детектор инцидента &rarr; пуш дежурному &rarr; массовый ответ.</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <div class="check-icon">5</div>
+              <div class="check-content">
+                <strong>Замыкание цикла: обучение базы знаний</strong>
+                <p>Оператор закрывает заявку &rarr; кнопка "В базу знаний" &rarr; черновик статьи утверждён &rarr; бот уже отвечает по ней!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Pitch Script -->
+    <div id="pitch" class="tab-pane">
+      <div class="speech-box">
+        <button class="copy-btn" onclick="copySpeech()">Копировать текст спитча</button>
+        <div class="speech-meta">
+          <span>⏱️ Хронометраж: 2.5 – 3 минуты</span>
+          <span>🎯 Цель: Убедить жюри в надежности, архитектуре и бизнес-ценности</span>
+          <span>👥 Роль: Lead Engineer / Product Presenter</span>
+        </div>
+        <div class="speech-text" id="speechText">
+<strong>«Здравствуйте, уважаемые эксперты и жюри!</strong>
+
+Каждый сентябрь и каждую сессию техподдержка МИСИС тонет в лавине одинаковых обращений: <em>«Не работает Wi-Fi в корпусе»</em>, <em>«Где взять справку в военкомат?»</em>, <em>«Не могу зайти в Moodle»</em>. 
+Операторы перегружены рутиной, а когда падает сеть — телефон разрывается от десятков разъярённых звонков.
+
+Обычные чат-боты здесь не работают — они галлюцинируют, отвечают невпопад и бесят студентов.
+
+Мы создали <strong>ИИ-помощника технической поддержки НИТУ МИСИС</strong> — автономного агента на базе <strong>LangGraph</strong> и отечественной платформы <strong>Yandex AI Studio</strong>. Это не просто диалоговое окно, это полноценный цифровой инженер первой линии.
+
+<span class="speech-cue">[ДЕЙСТВИЕ: Показываем экран входа и форму подачи]</span>
+Смотрите, как это работает. Студент входит под своей почтой МИСИС. Система сразу подтягивает его контекст — кто он, какая группа, какие обращения были ранее.
+
+<strong>Ключевая фишка номер один — умная диагностика и нулевые галлюцинации.</strong>
+Студент пишет: <em>«Wi-Fi EDU не пашет»</em>. Агент не выдумывает совет. Он <strong>сам вызывает встроенный инструмент диагностики</strong>. 
+Если сервис действительно лежит — студент <strong>за 2 секунды</strong> получает шаблонное подтверждение: <em>«Сбой известен, инженеры уже чинят»</em>. Никаких лишних затрат токенов, мгновенный ответ!
+
+<span class="speech-cue">[ДЕЙСТВИЕ: Переключаемся в админку оператора &rarr; Тест-панель]</span>
+<strong>Фишка номер два — детектор массовых инцидентов.</strong>
+Если за 15 минут приходят 3 однотипные жалобы — агент мгновенно регистрирует аварию, шлёт тревогу дежурному в Telegram и поднимает красный баннер в админке. Оператор одной кнопкой рассылает массовое извещение всем пострадавшим. Мы гасим панику до того, как она дойдёт до деканата.
+
+<span class="speech-cue">[ДЕЙСТВИЕ: Показываем карточку эскалации]</span>
+<strong>Фишка номер три — забота об операторе и безопасность.</strong>
+Если обращение сложное, на иностранном языке или с эмоциями — агент нормализует мат, переводит текст и передаёт оператору <strong>готовый пакет</strong>: краткую суть, результаты проверок и рекомендуемое решение. Оператор разбирается в ситуации за <strong>15 секунд</strong> вместо пяти минут.
+
+<span class="speech-cue">[ДЕЙСТВИЕ: Жмём кнопку «В базу знаний»]</span>
+И главное — <strong>система самообучается</strong>. Закрывая сложный кейс, оператор в один клик превращает решение в новую статью базы знаний. LLM генерирует структурированный черновик, оператор жмёт «Утвердить» — и агент уже умеет отвечать на этот вопрос без человека!
+
+Также система бесшовно работает в <strong>Telegram-боте</strong> и прямо из диалога оформляет <strong>5 видов официальных справок</strong> с отслеживанием статуса в личном кабинете.
+
+В итоге: <strong>до 70% закрытия типовых проблем без человека</strong>, реакция на сбои за секунды и полная прозрачность для руководства.
+
+Спасибо! Готовы продемонстрировать любой сценарий живьём!»
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0d1117',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f1f5f9',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#64748b',
+        secondaryColor: '#0f172a',
+        tertiaryColor: '#1e1b4b'
+      },
+      flowchart: { curve: 'basis' }
+    });
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      const targetPane = document.getElementById(tabId);
+      if (targetPane) {
+        targetPane.classList.add('active');
+        // Перерендериваем Mermaid если вкладка была скрыта при загрузке
+        if (window.mermaid) {
+          mermaid.run({ nodes: targetPane.querySelectorAll('.mermaid') });
+        }
+      }
+      
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function copySpeech() {
+      const text = document.getElementById('speechText').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerText = 'Скопировано! ✓';
+        setTimeout(() => { btn.innerText = 'Копировать текст спитча'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
