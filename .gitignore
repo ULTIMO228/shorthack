@@ -12,6 +12,8 @@ htmlcov/
 .env
 .bot_offset
 *.bot_offset
+.bot_states
+*.bot_states
 
 # Node
 node_modules/
