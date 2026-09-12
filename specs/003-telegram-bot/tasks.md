@@ -58,7 +58,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] В backend/app/bot/handlers.py — сценарий S1: state `awaiting_email` (валидация домена @misis.ru/@edu.misis.ru → `POST /api/internal/tg/link` → T4; иначе T5) → state `awaiting_confirm` (`POST /api/internal/tg/link/confirm`: ok → T6 + `core_api.login(email)`; неверный → T7 с счётчиком; attempts_exceeded → T8 + state=`awaiting_email`); `/status`/`/certs` до привязки → просьба привязаться (зависит T006)
+- [x] T008 [US2] В backend/app/bot/handlers.py — сценарий S1: state `awaiting_email` (валидация домена @misis.ru/@edu.misis.ru → `POST /api/internal/tg/link` → T4; иначе T5) → state `awaiting_confirm` (`POST /api/internal/tg/link/confirm`: ok → T6 + `core_api.login(email)`; неверный → T7 с счётчиком; attempts_exceeded → T8 + state=`awaiting_email`); `/status`/`/certs` до привязки → просьба привязаться (зависит T006)
 
 **Checkpoint**: новый пользователь привязывается, обращения идут от его профиля.
 

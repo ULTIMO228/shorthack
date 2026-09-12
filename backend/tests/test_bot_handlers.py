@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 
 from app.bot.core_api import CoreApiError
-from app.bot.handlers import dispatch_update
+from app.bot.handlers import dispatch_update, is_valid_misis_email
 from app.bot.messages import (
     MSG_CANCELLED,
     MSG_NEED_LINK,
@@ -11,6 +11,11 @@ from app.bot.messages import (
     T1_GREETING,
     T2_HELP,
     T3_ASK_EMAIL,
+    T4_EMAIL_SENT,
+    T5_EMAIL_INVALID,
+    T6_LINK_SUCCESS,
+    T7_CODE_INVALID,
+    T8_ATTEMPTS_EXCEEDED,
     T13_SERVICE_UNAVAILABLE,
 )
 
@@ -201,3 +206,142 @@ def test_callback_query_ack():
     dispatch_update(update, tg, core)
 
     tg.answer_callback_query.assert_called_once_with("cb_query_123")
+
+
+# --- US2: Привязка профиля по почте (T008) ---
+
+
+def test_is_valid_misis_email():
+    assert is_valid_misis_email("ivan@misis.ru") is True
+    assert is_valid_misis_email("STUDENT@EDU.MISIS.RU") is True
+    assert is_valid_misis_email("p.ivanov-26@misis.ru") is True
+
+    assert is_valid_misis_email("ivan@gmail.com") is False
+    assert is_valid_misis_email("ivan@misis.ru.com") is False
+    assert is_valid_misis_email("not-an-email") is False
+    assert is_valid_misis_email("@misis.ru") is False
+
+
+def test_awaiting_email_invalid_input():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": False, "state": "awaiting_email"}
+
+    update = {
+        "update_id": 11,
+        "message": {
+            "message_id": 21,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "мой email ivan@mail.ru",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    tg.send_message.assert_called_once_with(12345, T5_EMAIL_INVALID)
+    core.request_tg_link.assert_not_called()
+
+
+def test_awaiting_email_valid_input():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": False, "state": "awaiting_email"}
+    core.request_tg_link.return_value = {"ok": True, "confirm_code": "1234"}
+
+    update = {
+        "update_id": 12,
+        "message": {
+            "message_id": 22,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "  student@edu.misis.ru  ",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    core.request_tg_link.assert_called_once_with(12345, "student@edu.misis.ru")
+    tg.send_message.assert_called_once_with(
+        12345,
+        T4_EMAIL_SENT.format(email="student@edu.misis.ru"),
+    )
+
+
+def test_awaiting_confirm_success():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": False, "state": "awaiting_confirm"}
+    core.confirm_tg_link.return_value = {
+        "ok": True,
+        "user": {"full_name": "Алексей Иванов", "email": "a.ivanov@misis.ru"},
+    }
+
+    update = {
+        "update_id": 13,
+        "message": {
+            "message_id": 23,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "123456",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    core.confirm_tg_link.assert_called_once_with(12345, "123456")
+    core.login.assert_called_once_with(12345, "a.ivanov@misis.ru")
+    tg.send_message.assert_called_once_with(
+        12345,
+        T6_LINK_SUCCESS.format(full_name="Алексей Иванов"),
+    )
+
+
+def test_awaiting_confirm_invalid_code():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": False, "state": "awaiting_confirm"}
+    core.confirm_tg_link.return_value = {
+        "ok": False,
+        "reason": "invalid_code",
+        "remaining_attempts": 2,
+    }
+
+    update = {
+        "update_id": 14,
+        "message": {
+            "message_id": 24,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "000000",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    core.confirm_tg_link.assert_called_once_with(12345, "000000")
+    core.login.assert_not_called()
+    tg.send_message.assert_called_once_with(12345, T7_CODE_INVALID.format(n=2))
+
+
+def test_awaiting_confirm_attempts_exceeded():
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = {"ok": False, "state": "awaiting_confirm"}
+    core.confirm_tg_link.return_value = {
+        "ok": False,
+        "reason": "attempts_exceeded",
+        "remaining_attempts": 0,
+    }
+
+    update = {
+        "update_id": 15,
+        "message": {
+            "message_id": 25,
+            "chat": {"id": 12345, "type": "private"},
+            "text": "999999",
+        },
+    }
+
+    dispatch_update(update, tg, core)
+
+    core.confirm_tg_link.assert_called_once_with(12345, "999999")
+    core.login.assert_not_called()
+    tg.send_message.assert_called_once_with(12345, T8_ATTEMPTS_EXCEEDED)
+

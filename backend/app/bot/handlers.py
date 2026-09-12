@@ -9,6 +9,7 @@
 """
 
 import logging
+import re
 from typing import Any
 
 from app.bot.core_api import CoreApiClient, CoreApiError
@@ -19,6 +20,11 @@ from app.bot.messages import (
     T1_GREETING,
     T2_HELP,
     T3_ASK_EMAIL,
+    T4_EMAIL_SENT,
+    T5_EMAIL_INVALID,
+    T6_LINK_SUCCESS,
+    T7_CODE_INVALID,
+    T8_ATTEMPTS_EXCEEDED,
     T13_SERVICE_UNAVAILABLE,
 )
 from app.bot.tg import TelegramClient
@@ -73,6 +79,81 @@ def handle_command(
         logger.debug("Неизвестная команда: %s от chat_id=%s", command, chat_id)
 
 
+def is_valid_misis_email(email_candidate: str) -> bool:
+    """Проверка корпоративного домена МИСИС (@misis.ru или @edu.misis.ru)."""
+    candidate = email_candidate.strip().lower()
+    if not re.match(r"^[a-z0-9_.+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+$", candidate):
+        return False
+    return candidate.endswith("@misis.ru") or candidate.endswith("@edu.misis.ru")
+
+
+def handle_awaiting_email(
+    text: str,
+    chat_id: int,
+    tg: TelegramClient,
+    core: CoreApiClient,
+) -> None:
+    """Сценарий S1: обработка ввода email в состоянии awaiting_email."""
+    cleaned = text.strip().strip("'\"")
+    if not is_valid_misis_email(cleaned):
+        tg.send_message(chat_id, T5_EMAIL_INVALID)
+        return
+
+    email = cleaned.lower()
+    try:
+        core.request_tg_link(chat_id, email)
+        tg.send_message(chat_id, T4_EMAIL_SENT.format(email=email))
+    except CoreApiError as exc:
+        if exc.status_code == 400:
+            tg.send_message(chat_id, T5_EMAIL_INVALID)
+        else:
+            logger.warning("Ошибка связи с ядром при request_tg_link: %s", exc)
+            tg.send_message(chat_id, T13_SERVICE_UNAVAILABLE)
+
+
+def handle_awaiting_confirm(
+    text: str,
+    chat_id: int,
+    tg: TelegramClient,
+    core: CoreApiClient,
+) -> None:
+    """Сценарий S1: обработка ввода кода подтверждения в состоянии awaiting_confirm."""
+    code = text.strip()
+    try:
+        res = core.confirm_tg_link(chat_id, code)
+        if res.get("ok"):
+            user = res.get("user") or {}
+            full_name = user.get("full_name") or user.get("name") or "Пользователь"
+            user_email = user.get("email", "")
+            if user_email:
+                try:
+                    core.login(chat_id, user_email)
+                except Exception as login_exc:
+                    logger.warning(
+                        "Не удалось авторизовать сессию ядра для chat_id=%s (%s): %s",
+                        chat_id,
+                        user_email,
+                        login_exc,
+                    )
+            tg.send_message(chat_id, T6_LINK_SUCCESS.format(full_name=full_name))
+        else:
+            reason = res.get("reason", "")
+            remaining = res.get("remaining_attempts", 0)
+            if reason == "attempts_exceeded" or remaining <= 0:
+                tg.send_message(chat_id, T8_ATTEMPTS_EXCEEDED)
+            else:
+                tg.send_message(chat_id, T7_CODE_INVALID.format(n=remaining))
+    except CoreApiError as exc:
+        if exc.status_code == 400:
+            if "attempts_exceeded" in exc.detail:
+                tg.send_message(chat_id, T8_ATTEMPTS_EXCEEDED)
+            else:
+                tg.send_message(chat_id, T7_CODE_INVALID.format(n=1))
+        else:
+            logger.warning("Ошибка связи с ядром при confirm_tg_link: %s", exc)
+            tg.send_message(chat_id, T13_SERVICE_UNAVAILABLE)
+
+
 def handle_text_message(
     text: str,
     chat_id: int,
@@ -84,9 +165,16 @@ def handle_text_message(
     state = link_info.get("state", "awaiting_email")
     logger.debug("Обработка текста в состоянии %s для chat_id=%s", state, chat_id)
 
-    # Состояния привязки (awaiting_email, awaiting_confirm) реализуются в US2 (Phase 4)
-    # Состояние idle (новое обращение) реализуется в US1 (Phase 3)
-    # Состояние dialog:<id> реализуется в US3 (Phase 5)
+    if state == "awaiting_confirm":
+        handle_awaiting_confirm(text, chat_id, tg, core)
+    elif state == "awaiting_email" or not is_user_linked(link_info):
+        handle_awaiting_email(text, chat_id, tg, core)
+    elif state == "idle":
+        # Состояние idle (новое обращение) реализуется в US1 (Phase 3)
+        pass
+    elif state.startswith("dialog:"):
+        # Состояние dialog:<id> реализуется в US3 (Phase 5)
+        pass
 
 
 def handle_message(
