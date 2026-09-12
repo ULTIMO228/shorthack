@@ -30,7 +30,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 **⚠️ Блокирует все user story**
 
-- [ ] T006 State machine в backend/app/bot/handlers.py + main.py: `GET /api/internal/tg/link?chat_id=` на каждый апдейт → маршрутизация по `state` (awaiting_email/awaiting_confirm/idle/dialog:<request_id>); диспетчер: команды (`/start /help /status /certs /cancel`) vs текст vs callback_query; фильтр `chat.type=="private"` (зависит T001-T005)
+- [x] T006 State machine в backend/app/bot/handlers.py + main.py: `GET /api/internal/tg/link?chat_id=` на каждый апдейт → маршрутизация по `state` (awaiting_email/awaiting_confirm/idle/dialog:<request_id>); диспетчер: команды (`/start /help /status /certs /cancel`) vs текст vs callback_query; фильтр `chat.type=="private"` (зависит T001-T005)
 
 **Checkpoint**: бот стартует, `/start` и `/help` отвечают (T1/T2) без ядровой логики обращений.
 
