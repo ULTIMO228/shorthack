@@ -27,7 +27,10 @@ def _parse_dt(val: Any) -> datetime | None:
     if val is None:
         return None
     if isinstance(val, str):
-        val = datetime.fromisoformat(val)
+        try:
+            val = datetime.fromisoformat(val)
+        except (ValueError, TypeError):
+            return None
     if isinstance(val, datetime):
         if val.tzinfo is None:
             val = val.replace(tzinfo=timezone.utc)

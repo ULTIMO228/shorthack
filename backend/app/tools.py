@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import logging
 import secrets
 import time
 from dataclasses import dataclass
@@ -36,6 +37,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session as OrmSession
 
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 from app import incidents, kb, llm, tickets
 from app.certs import order_certificate
@@ -419,7 +422,8 @@ def draft_kb_article(
             "topic": topic,
             "draft_fallback": False,
         }
-    except (llm.LLMUnavailable, Exception):
+    except Exception as exc:
+        logger.warning("draft_kb_article: сбой генерации через LLM, используется шаблон: %s", exc)
         title = f"Решение: {resolution}"[:100]
         prob_text = summary or (request.masked_text if request else "") or "обращение"
         body = f"Проблема: {prob_text}.\nРешение: {resolution}."

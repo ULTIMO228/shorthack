@@ -295,11 +295,11 @@ def close_escalation(
     Закрывает тикет (через «решена» → «закрыта»). Если передан add_to_kb=true,
     вызывает инструмент draft_kb_article и создаёт неподтверждённый черновик
     KbArticle (source='operator', confirmed=false).
-    Повторный вызов для уже закрытого тикета возвращает 409 Conflict.
+    Повторный вызов для уже закрытого тикета идемпотентен (возвращает 200 OK с kb_draft=None).
     """
     if not body.resolution or not body.resolution.strip():
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Укажите резолюцию закрытия",
         )
 
@@ -568,7 +568,7 @@ def _validate_tool_params(name: str, raw_params: dict[str, Any]) -> dict[str, An
     for key in raw_params:
         if key not in param_specs:
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"Неизвестный параметр «{key}»",
             )
 
@@ -580,49 +580,58 @@ def _validate_tool_params(name: str, raw_params: dict[str, Any]) -> dict[str, An
             val = spec["default"]
         elif spec.get("required"):
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"Параметр «{p_name}» обязателен",
             )
         else:
             val = None
 
+        if val is None:
+            if spec.get("required"):
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=f"Параметр «{p_name}» обязателен",
+                )
+            if spec.get("default") is not None:
+                val = spec["default"]
+
         if val is not None:
             expected_type = spec.get("type")
             if expected_type == "string" and not isinstance(val, str):
                 raise HTTPException(
-                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Параметр «{p_name}» должен быть строкой",
                 )
             elif expected_type == "integer" and (not isinstance(val, int) or isinstance(val, bool)):
                 raise HTTPException(
-                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Параметр «{p_name}» должен быть целым числом",
                 )
 
             choices = spec.get("choices")
             if choices is not None and val not in choices:
                 raise HTTPException(
-                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Параметр «{p_name}» вне допустимого набора",
                 )
 
             min_val = spec.get("min")
             if min_val is not None and val < min_val:
                 raise HTTPException(
-                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Параметр «{p_name}» меньше допустимого минимума ({min_val})",
                 )
 
             max_val = spec.get("max")
             if max_val is not None and val > max_val:
                 raise HTTPException(
-                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Параметр «{p_name}» больше допустимого максимума ({max_val})",
                 )
 
             if p_name == "url" and spec.get("default") and val != spec["default"]:
                 raise HTTPException(
-                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    status.HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Недопустимый URL «{val}» (разрешён только «{spec['default']}»)",
                 )
 

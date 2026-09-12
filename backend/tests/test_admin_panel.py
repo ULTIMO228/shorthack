@@ -286,3 +286,39 @@ def test_invoke_simulate_wave_delegates_to_incidents(operator_client, client, db
     assert data["result"]["created_requests"] == [101, 102, 103]
     assert called_with["service"] == "wifi_edu"
     assert called_with["count"] == 3
+
+
+def test_invoke_params_null_values_handling(operator_client, monkeypatch):
+    """Null-значения: required -> 422 (не 500 KeyError), optional с default -> использует default."""
+    # 1. Required null -> 422
+    resp1 = operator_client.post(
+        "/api/admin/tools/simulate_wave/invoke",
+        json={"params": {"service": None}},
+    )
+    assert resp1.status_code == 422
+    assert "service" in resp1.json()["detail"]
+
+    resp2 = operator_client.post(
+        "/api/admin/tools/check_wifi/invoke",
+        json={"params": {"network": None}},
+    )
+    assert resp2.status_code == 422
+    assert "network" in resp2.json()["detail"]
+
+    # 2. Optional с default передано как null -> подставляется default
+    spy_called: dict = {}
+
+    def spy_simulate(db, *, service: str, count: int = 3):
+        spy_called["service"] = service
+        spy_called["count"] = count
+        return {"incident_id": None, "created_requests": []}
+
+    monkeypatch.setattr("app.incidents.simulate_wave", spy_simulate)
+    resp3 = operator_client.post(
+        "/api/admin/tools/simulate_wave/invoke",
+        json={"params": {"service": "site", "count": None}},
+    )
+    assert resp3.status_code == 200
+    assert spy_called["service"] == "site"
+    assert spy_called["count"] == 3
+
