@@ -7,6 +7,8 @@ venv/
 # App
 *.db
 .env
+.bot_offset
+*.bot_offset
 
 # Node
 node_modules/

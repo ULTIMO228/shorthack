@@ -18,11 +18,11 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Создать backend/app/bot/main.py: точка входа `python -m app.bot.main`; цикл long polling (offset в памяти + файл backend/.bot_offset), backoff 1→60 c при сетевых ошибках, лог старта (`polling as @<username>`)
-- [ ] T002 [P] Создать backend/app/bot/tg.py: клиент Bot API — `getUpdates(timeout=30, allowed_updates=["message","callback_query"])`, `sendMessage`, `editMessageText`, `answerCallbackQuery`; обработка 429 (`retry_after`); разбиение текста >4096 по абзацам с суффиксом «(продолжение)»
-- [ ] T003 [P] Создать backend/app/bot/core_api.py: клиент REST ядра — cookie-сессии per chat_id (`POST /api/auth/login` после привязки), вызовы `/api/requests*`, `/api/certs/*`, `/api/internal/*` с заголовком `X-Bot-Token`; `CORE_API_URL` из env
-- [ ] T004 [P] Создать backend/app/bot/messages.py: ВСЕ тексты T1-T15 verbatim из contracts/bot-contract.md §2 (константы; правки текстов — только здесь)
-- [ ] T005 [P] Создать backend/app/bot/keyboards.py: inline-клавиатуры K1 (каталог справок, `cert:<type>` + `cert:my`) и K2 (`cert_order:<type>` / `noop`) из contracts/bot-contract.md §3
+- [x] T001 Создать backend/app/bot/main.py: точка входа `python -m app.bot.main`; цикл long polling (offset в памяти + файл backend/.bot_offset), backoff 1→60 c при сетевых ошибках, лог старта (`polling as @<username>`)
+- [x] T002 [P] Создать backend/app/bot/tg.py: клиент Bot API — `getUpdates(timeout=30, allowed_updates=["message","callback_query"])`, `sendMessage`, `editMessageText`, `answerCallbackQuery`; обработка 429 (`retry_after`); разбиение текста >4096 по абзацам с суффиксом «(продолжение)»
+- [x] T003 [P] Создать backend/app/bot/core_api.py: клиент REST ядра — cookie-сессии per chat_id (`POST /api/auth/login` после привязки), вызовы `/api/requests*`, `/api/certs/*`, `/api/internal/*` с заголовком `X-Bot-Token`; `CORE_API_URL` из env
+- [x] T004 [P] Создать backend/app/bot/messages.py: ВСЕ тексты T1-T15 verbatim из contracts/bot-contract.md §2 (константы; правки текстов — только здесь)
+- [x] T005 [P] Создать backend/app/bot/keyboards.py: inline-клавиатуры K1 (каталог справок, `cert:<type>` + `cert:my`) и K2 (`cert_order:<type>` / `noop`) из contracts/bot-contract.md §3
 
 ---
 
