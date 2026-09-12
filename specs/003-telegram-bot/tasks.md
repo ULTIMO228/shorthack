@@ -30,7 +30,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 **⚠️ Блокирует все user story**
 
-- [x] T006 State machine в backend/app/bot/handlers.py + main.py: `GET /api/internal/tg/link?chat_id=` на каждый апдейт → маршрутизация по `state` (awaiting_email/awaiting_confirm/idle/dialog:<request_id>); диспетчер: команды (`/start /help /status /certs /cancel`) vs текст vs callback_query; фильтр `chat.type=="private"` (зависит T001-T005)
+- [x] T006 State machine в backend/app/bot/handlers.py + main.py: `GET /api/internal/tg/link?chat_id=` на каждый апдейт → маршрутизация по `state` (awaiting_email/awaiting_confirm/idle/dialog:<request_id>); непривязанный = гость: обращения разрешены, персональные функции → T16; диспетчер: команды (`/start /help /link /status /certs /cancel`) vs текст vs callback_query; фильтр `chat.type=="private"` (зависит T001-T005)
 
 **Checkpoint**: бот стартует, `/start` и `/help` отвечают (T1/T2) без ядровой логики обращений.
 
@@ -44,7 +44,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 1
 
-- [x] T007 [US1] В backend/app/bot/handlers.py — сценарий S2: текст в `idle` → T9 → `POST /api/requests {"text", "channel":"telegram"}` → маппинг `reactions[]` по kind (T10/T11/T14/текст как есть), `duplicate=true` → префикс «похоже на вашу заявку {number}», несколько подзадач → сообщения с префиксом `{i}/{n}:`; `clarification` → state=`dialog:<request_id>` (зависит T006)
+- [x] T007 [US1] В backend/app/bot/handlers.py — сценарий S2: текст в `idle` (привязанный или гость) → T9 → `POST /api/requests {"text", "channel":"telegram"}` (гость — без пользовательской сессии, ядро создаёт гостевую) → маппинг `reactions[]` по kind (T10/T11/T14/T16 для auth_required/текст как есть), `duplicate=true` → префикс «похоже на вашу заявку {number}», несколько подзадач → сообщения с префиксом `{i}/{n}:`; `clarification` → state=`dialog:<request_id>`; после первого гостевого обращения — одноразовое предложение привязаться (зависит T006)
 
 **Checkpoint**: полное обращение проходит в чате.
 
@@ -58,7 +58,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 2
 
-- [x] T008 [US2] В backend/app/bot/handlers.py — сценарий S1: state `awaiting_email` (валидация домена @misis.ru/@edu.misis.ru → `POST /api/internal/tg/link` → T4; иначе T5) → state `awaiting_confirm` (`POST /api/internal/tg/link/confirm`: ok → T6 + `core_api.login(email)`; неверный → T7 с счётчиком; attempts_exceeded → T8 + state=`awaiting_email`); `/status`/`/certs` до привязки → просьба привязаться (зависит T006)
+- [x] T008 [US2] В backend/app/bot/handlers.py — сценарий S1 (опциональная привязка): запуск по `/link` или из T16 → T3, state `awaiting_email` (валидация домена @misis.ru/@edu.misis.ru → `POST /api/internal/tg/link` → T4; иначе T5) → state `awaiting_confirm` (`POST /api/internal/tg/link/confirm`: ok → T6 + `core_api.login(email)`; неверный → T7 с счётчиком; attempts_exceeded → T8 + state=`awaiting_email`); `/status` и `/certs` без привязки → T16 + отказ (зависит T006)
 
 **Checkpoint**: новый пользователь привязывается, обращения идут от его профиля.
 

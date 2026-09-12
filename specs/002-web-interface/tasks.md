@@ -18,7 +18,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Заменить frontend/src/App.jsx (форма сокращателя) каркасом: state `session`/`view`/`selectedRequestId`, `GET /api/auth/me` при старте, переключение представлений, меню по роли
+- [ ] T001 Заменить frontend/src/App.jsx (форма сокращателя) каркасом: state `session` (`{user}` или `{guest:true}` из `GET /api/auth/me`)/`view`/`selectedRequestId`, переключение представлений, меню по роли; кнопка «Войти по почте МИСИС» в шапке для гостя, «Профиль/Выйти» для авторизованного
 - [ ] T002 [P] Создать frontend/src/api.js: обёртка fetch (`credentials:"include"`, JSON, 401 → колбэк на login, ошибки → `error.detail`)
 
 ---
@@ -44,7 +44,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Создать frontend/src/views/LoginView.jsx: форма email → `POST /api/auth/login`; ошибка 400 (домен) под полем; успех → session в App, переход на `request` (оператор → `admin.queue`); logout-кнопка в шапке App
+- [ ] T007 [US1] Создать frontend/src/views/LoginView.jsx: форма email → `POST /api/auth/login`; ошибка 400 (домен) под полем; успех → session в App (гостевая сессия привязывается к user_id — диалог сохраняется), переход на прежний view; вход ОПЦИОНАЛЕН: на LoginView попадают по кнопке из шапки или из плашек «требуется вход»; logout-кнопка в шапке App
 
 **Checkpoint**: вход/выход/F5 работают против живого ядра.
 
@@ -60,7 +60,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 - [ ] T008 [US2] Создать frontend/src/views/RequestView.jsx: textarea + `POST /api/requests`; 8 кнопок примеров (FR-014, захардкожены); Spinner на время запроса
 - [ ] T009 [US2] В RequestView.jsx — блок результата: подзадачи с PriorityBadge/RouteBadge + `route_reason`, номер тикета SUP-2026-*, статус
-- [ ] T010 [US2] В RequestView.jsx — диалог: лента сообщений, ввод при `ticket.status==="ждёт ответа пользователя"` → `POST /api/requests/{id}/reply`; `reaction.kind==="outage_notice"` → красная плашка; `cert_ordered` → карточка-ссылка в кабинет; 409 → блокировка ввода с текстом (зависит T008)
+- [ ] T010 [US2] В RequestView.jsx — диалог: лента сообщений, ввод при `ticket.status==="ждёт ответа пользователя"` → `POST /api/requests/{id}/reply`; `reaction.kind==="outage_notice"` → красная плашка; `cert_ordered` → карточка-ссылка в кабинет; `auth_required` → плашка «Требуется вход по почте МИСИС» с кнопкой входа (заказ не создан); 409 → блокировка ввода с текстом (зависит T008)
 
 **Checkpoint**: полный цикл обращения в браузере.
 
@@ -74,7 +74,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 3
 
-- [ ] T011 [P] [US3] Создать frontend/src/views/CabinetView.jsx: раздел «Мои обращения» (`GET /api/requests`, polling 5 c): номер, дата, статус, summary; клик → детали (диалог read-only)
+- [ ] T011 [P] [US3] Создать frontend/src/views/CabinetView.jsx: гостю — заглушка «Кабинет доступен после входа по почте МИСИС» с кнопкой входа (запросы не выполняются); авторизованному — раздел «Мои обращения» (`GET /api/requests`, polling 5 c): номер, дата, статус, summary; клик → детали (диалог read-only)
 - [ ] T012 [US3] В CabinetView.jsx — раздел «Справки»: каталог (`GET /api/certs/catalog`) с кнопкой заказа (`POST /api/certs/orders`); «Мои заказы» (`GET /api/certs/orders`) с цепочкой-прогрессом 4 статусов (зависит T011)
 
 **Checkpoint**: заказ из каталога появляется в списке; смена статуса оператором доезжает поллингом.

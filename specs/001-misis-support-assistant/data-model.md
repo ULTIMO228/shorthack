@@ -15,18 +15,21 @@
 
 Связи: 1→N requests, 1→N cert_orders, 1→N sessions.
 
-### sessions — Сессия (FR-001..003 фичи 002)
+### sessions — Сессия (FR-001..003 фичи 002, гостевой режим FR-016)
 | Поле | Тип | Правила |
 |---|---|---|
 | id | String PK (token) | `secrets.token_urlsafe(32)` (LESSONS L003) |
-| user_id | FK users.id, not null | |
+| user_id | FK users.id, **null** | null = гостевая сессия (без почты МИСИС) |
 | created_at | DateTime | |
+
+Гостевая сессия создаётся автоматически при первом обращении без входа; после логина гостевая сессия привязывается к user_id (диалог сохраняется).
 
 ### requests — Обращение
 | Поле | Тип | Правила |
 |---|---|---|
 | id | Integer PK | |
-| user_id | FK users.id, not null | обращение без профиля невозможно (FR-001) |
+| user_id | FK users.id, **null** | null для гостя; заказ справок требует not null (FR-043) |
+| session_id | FK sessions.id, not null | сессия автора (пользовательская или гостевая) — защита диалога и дедупликация |
 | channel | String, not null | `web` / `telegram` |
 | raw_text | Text, not null | исходник (доступен оператору, FR-002) |
 | masked_text | Text, not null | мат замаскирован (`*`) |
@@ -151,7 +154,7 @@
 
 ## Ключевые правила валидации (из спеки)
 
-- Однотипность = совпадение `(service, category)` в subtasks (Q1) — используется детектором и дедупликацией.
+- Однотипность = совпадение `(service, category)` в subtasks (Q1) — используется детектором и дедупликацией. Дедупликация: у авторизованного — по user_id; у гостя — по session_id в пределах гостевой сессии (FR-016). Детектор инцидентов считает distinct авторов по `COALESCE(user_id, session_id)`.
 - `subtasks.confidence < 0.6` (настраивается) → route=`escalate` независимо от модели (FR-013).
 - Приоритет после арбитража: подтверждённый сбой (`services.state=down` при проверке) → `critical`; активный инцидент по (service, category) → не ниже `high` (FR-011).
 - Номер заявки для показа: `SUP-2026-<id:04d>` (генерируется из id, не хранится).

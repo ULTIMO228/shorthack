@@ -1,17 +1,19 @@
 {
   "integration": "speckit",
-  "version": "0.14.2",
+  "version": "1.0.6",
   "installed_at": "2026-09-12T08:13:17.911385+00:00",
   "files": {
-    ".specify/scripts/bash/common.sh": "6ff86bf39f6b4684b0f80927dc7a1dadec26b4671988a3fe4d6c2523cbd3aa22",
-    ".specify/scripts/bash/setup-plan.sh": "4469b22960f43c07c33dca00de6dedb252145e9a9ce8fbb0e63be82e02b082ab",
-    ".specify/scripts/bash/setup-tasks.sh": "cf21ba2212b4dd5b435c5ea8527500cfd27768b86c0bbc7ebc3207759f118d27",
-    ".specify/scripts/bash/check-prerequisites.sh": "a7d8a14ecf87332b600cd966b5d0e7cb9d594abce7e4d1ee4372b2b5b3efff06",
-    ".specify/scripts/bash/create-new-feature.sh": "ad09a94a2c1107e25e5386a834da1d7a31f9abb06ab8bfd323a7b84038221e39",
+    ".specify/scripts/bash/common.sh": "6f12bcafb49c404ef4a2b16fbc796d28e2c17ea7bd753d690fa19f4ac7683b32",
+    ".specify/scripts/bash/setup-plan.sh": "d0bd298c026446f3c63167130d65e49e4aa4485de6bef18bcdfd57b19aa0de96",
+    ".specify/scripts/bash/setup-tasks.sh": "383277db3f13fc8b157336f8fdb2a37680cdde4c2605b4905d7acbf7b42e0c0f",
+    ".specify/scripts/bash/check-prerequisites.sh": "5c3499a3542fe05b4af429771882f697567f2e82d77a20273c6a1f9668144d6d",
+    ".specify/scripts/bash/create-new-feature.sh": "9f7a741d9766a6c1c5d5e44368f2c6bea6026b399ff6f0055870f760afdb8726",
     ".specify/templates/constitution-template.md": "ce7549540fa45543cca797a150201d868e64495fdff39dc38246fb17bd4024b3",
-    ".specify/templates/checklist-template.md": "709d8ab8384a3a49f5e0f64479f71553ef6d6f8bb4f00281b05f47837993b536",
-    ".specify/templates/tasks-template.md": "fc29a233f6f5a27ca31f1aa46b596af6500c627441c6e62b2bc4a1d721525842",
+    ".specify/templates/checklist-template.md": "aab3ebbd1bb10f05e475b664ad52f376b950219233f0db9c6934328b7d86b30e",
+    ".specify/templates/tasks-template.md": "25e3c43e94f4a9c6320a1253112aab541379aaf245f2f6930e15d4b2b38db200",
     ".specify/templates/spec-template.md": "3945437fc35cd30a5b2bf7beea680337c3516826d3efa5a6b92c4a7eca1ba28e",
-    ".specify/templates/plan-template.md": "7e637502d41eccf0ca672496636365691fdca62ef37b27ec07fcb412dbfa90d4"
+    ".specify/templates/plan-template.md": "16c9ab45a530ab03e38706f2f437829100cb307dbb8070748f8ec1d8b8904b3f",
+    ".specify/scripts/bash/resolve-template.sh": "829e227096abc8bf0889889ec9f792f503ca5d395b7836a8a7eb739ee75214e7",
+    ".specify/.gitignore": "8c908410d177a1ef3d0dee16d7ad55f2ac3333df3104c4d4adee1c9b82f1dbc1"
   }
 }
