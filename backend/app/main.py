@@ -1,82 +1,62 @@
-"""Shorthack — сервис коротких ссылок (hackathon-style)."""
+"""Ядро ИИ-помощника техподдержки МИСИС: FastAPI-приложение, старт БД, сидирование."""
 
-import string
-import random
-from datetime import datetime, timezone
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, HttpUrl
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.orm import declarative_base, sessionmaker
+from fastapi import FastAPI
 
-app = FastAPI(title="Shorthack", version="0.1.0")
+from app import llm
+from app.db import Base, SessionLocal, engine
+from app.routers import admin as admin_router
+from app.routers import auth as auth_router
+from app.routers import certs as certs_router
+from app.routers import internal as internal_router
+from app.routers import requests as requests_router
+from app.schemas import HealthOut
+from app.seed import seed
 
-engine = create_engine("sqlite:///./shorthack.db", connect_args={"check_same_thread": False})
-Session = sessionmaker(bind=engine)
-Base = declarative_base()
-
-ALPHABET = string.ascii_letters + string.digits
-
-
-class Link(Base):
-    __tablename__ = "links"
-
-    id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True, index=True)
-    url = Column(String, nullable=False)
-    clicks = Column(Integer, default=0)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 
 
-Base.metadata.create_all(engine)
+def load_env_file(path: Path = ENV_PATH) -> None:
+    """Мини-загрузчик backend/.env (KEY=VALUE); python-dotenv в проекте нет.
+
+    setdefault — реальные переменные окружения приоритетнее файла.
+    """
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
-class ShortenRequest(BaseModel):
-    url: HttpUrl
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_env_file()
+    Base.metadata.create_all(engine)
+    with SessionLocal() as db:
+        seed(db)
+    yield
+    engine.dispose()
 
 
-class LinkResponse(BaseModel):
-    code: str
-    short_url: str
-    url: str
-    clicks: int
+app = FastAPI(
+    title="Shorthack — ИИ-помощник техподдержки МИСИС",
+    version="0.2.0",
+    lifespan=lifespan,
+)
+app.include_router(auth_router.router)
+app.include_router(internal_router.router)
+app.include_router(requests_router.router)
+app.include_router(admin_router.router)
+app.include_router(certs_router.router)
 
 
-def generate_code(length: int = 6) -> str:
-    return "".join(random.choices(ALPHABET, k=length))
-
-
-@app.post("/api/shorten", response_model=LinkResponse)
-def shorten(req: ShortenRequest):
-    session = Session()
-    for _ in range(5):
-        code = generate_code()
-        if not session.query(Link).filter_by(code=code).first():
-            break
-    else:
-        raise HTTPException(500, "Не удалось сгенерировать код")
-    link = Link(code=code, url=str(req.url))
-    session.add(link)
-    session.commit()
-    return LinkResponse(code=code, short_url=f"/{code}", url=link.url, clicks=0)
-
-
-@app.get("/api/stats/{code}", response_model=LinkResponse)
-def stats(code: str):
-    session = Session()
-    link = session.query(Link).filter_by(code=code).first()
-    if not link:
-        raise HTTPException(404, "Ссылка не найдена")
-    return LinkResponse(code=code, short_url=f"/{code}", url=link.url, clicks=link.clicks)
-
-
-@app.get("/{code}")
-def redirect(code: str):
-    session = Session()
-    link = session.query(Link).filter_by(code=code).first()
-    if not link:
-        raise HTTPException(404, "Ссылка не найдена")
-    link.clicks += 1
-    session.commit()
-    return RedirectResponse(link.url)
+@app.get("/api/health", response_model=HealthOut, tags=["service"])
+def health() -> HealthOut:
+    """Публичная проверка живости: статус приложения и доступность LLM."""
+    return HealthOut(status="ok", llm="up" if llm.llm_up() else "down")

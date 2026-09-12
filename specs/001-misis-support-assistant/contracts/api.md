@@ -144,9 +144,10 @@
 
 ### GET /api/admin/status-board — состояние сервисов.
 ```json
-← 200 [ { "name": "misis.ru", "check_type": "real", "state": "up", "last_check": { "ok": true, "http_code": 200, "latency_ms": 183, "checked_at": "…" } },
-        { "name": "MISIS-EDU", "check_type": "emulated", "state": "down", "last_check": null } ]
+← 200 [ { "id": 1, "name": "misis.ru", "check_type": "real", "state": "up", "last_check": { "ok": true, "http_code": 200, "latency_ms": 183, "checked_at": "…" } },
+        { "id": 4, "name": "MISIS-EDU", "check_type": "emulated", "state": "down", "last_check": null } ]
 ```
+`id` — числовой идентификатор сервиса; нужен фронту для `PATCH /api/admin/services/{id}` (дополнено при реализации 002).
 
 ### PATCH /api/admin/services/{id} — переключение эмулируемого сервиса.
 ```json

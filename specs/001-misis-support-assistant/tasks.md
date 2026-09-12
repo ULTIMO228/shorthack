@@ -21,9 +21,9 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Добавить `langgraph>=1.1,<2` в backend/requirements.txt и установить в backend/.venv
-- [ ] T002 [P] Создать backend/.env.example: `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, `YANDEX_MODEL_CLASSIFY`, `YANDEX_MODEL_GENERATE`, `BOT_INTERNAL_TOKEN`, `CORE_API_URL` (значения-плейсхолдеры, без секретов)
-- [ ] T003 Удалить код сокращателя ссылок из backend/app/main.py (эндпоинты `/api/shorten`, `/{code}`, модель Link) и старые тесты из backend/tests/test_api.py — оставить каркас приложения
+- [X] T001 Добавить `langgraph>=1.1,<2` в backend/requirements.txt и установить в backend/.venv
+- [X] T002 [P] Создать backend/.env.example: `YANDEX_API_KEY`, `YANDEX_FOLDER_ID`, `YANDEX_MODEL_CLASSIFY`, `YANDEX_MODEL_GENERATE`, `BOT_INTERNAL_TOKEN`, `CORE_API_URL` (значения-плейсхолдеры, без секретов)
+- [X] T003 Удалить код сокращателя ссылок из backend/app/main.py (эндпоинты `/api/shorten`, `/{code}`, модель Link) и старые тесты из backend/tests/test_api.py — оставить каркас приложения
 
 ---
 
@@ -31,15 +31,15 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 **⚠️ Блокирует все user story**
 
-- [ ] T004 [P] Создать backend/app/db.py: engine SQLite, Base, `get_session()` через Depends+yield (LESSONS L002)
-- [ ] T005 Создать backend/app/models.py: все таблицы по data-model.md (users, sessions, requests, subtasks, tickets, services, service_checks, kb_articles, cert_orders, incidents, events, tg_links, outbound_messages) (зависит T004)
-- [ ] T006 [P] Создать backend/app/schemas.py: DTO всех эндпоинтов из contracts/api.md + Pydantic-схема JSON-ответа классификатора (route/service/category/priority/confidence/reason)
-- [ ] T007 Создать backend/app/llm.py: клиент Yandex AI Studio — `chat()` и `embed()` через httpx (`Authorization: Api-Key`, `OpenAI-Project`, таймаут 25 c), JSON-парсинг ответа + Pydantic-валидация + 1 retry, исключение `LLMUnavailable` (зависит T006)
-- [ ] T008 [P] Создать backend/app/auth.py + backend/app/routers/auth.py: `POST /api/auth/login` (домен @misis.ru/@edu.misis.ru, автосоздание пользователя, cookie `session_id` HttpOnly), `POST /api/auth/logout`, `GET /api/auth/me` (200 `{user}` или `{user:null, guest:true}`); гостевые сессии: авто-создание анонимной сессии при первом обращении без логина, привязка гостевой сессии к user_id при логине (диалог сохраняется); dependency `current_session`/`current_user` (зависит T005)
-- [ ] T009 [P] Создать backend/app/events.py: helper `log_event(ticket_id, actor, action, payload)` — журнал FR-061 (зависит T005)
-- [ ] T010 Создать backend/app/seed.py: 5 пользователей (3 студента, сотрудник, оператор), 5 сервисов (misis.ru/newlms real, 3 Wi-Fi emulated), документы и шаблоны БЗ по FR-030 + индексация embeddings при старте (идемпотентно; при недоступности API — keyword-деградация) (зависит T005, T007)
-- [ ] T011 Собрать backend/app/main.py: FastAPI, include_router всех роутеров, startup → `create_all` + `seed()` (зависит T004-T010)
-- [ ] T012 [P] Создать backend/app/routers/internal.py: `GET/POST /api/internal/tg/link`, `POST /api/internal/tg/link/confirm` (код, 3 попытки), заготовка `GET /api/internal/outbound`, `POST /api/internal/outbound/{id}/ack` — заголовок `X-Bot-Token` (зависит T005, T008)
+- [X] T004 [P] Создать backend/app/db.py: engine SQLite, Base, `get_session()` через Depends+yield (LESSONS L002)
+- [X] T005 Создать backend/app/models.py: все таблицы по data-model.md (users, sessions, requests, subtasks, tickets, services, service_checks, kb_articles, cert_orders, incidents, events, tg_links, outbound_messages) (зависит T004)
+- [X] T006 [P] Создать backend/app/schemas.py: DTO всех эндпоинтов из contracts/api.md + Pydantic-схема JSON-ответа классификатора (route/service/category/priority/confidence/reason)
+- [X] T007 Создать backend/app/llm.py: клиент Yandex AI Studio — `chat()` и `embed()` через httpx (`Authorization: Api-Key`, `OpenAI-Project`, таймаут 25 c), JSON-парсинг ответа + Pydantic-валидация + 1 retry, исключение `LLMUnavailable` (зависит T006)
+- [X] T008 [P] Создать backend/app/auth.py + backend/app/routers/auth.py: `POST /api/auth/login` (домен @misis.ru/@edu.misis.ru, автосоздание пользователя, cookie `session_id` HttpOnly), `POST /api/auth/logout`, `GET /api/auth/me` (200 `{user}` или `{user:null, guest:true}`); гостевые сессии: авто-создание анонимной сессии при первом обращении без логина, привязка гостевой сессии к user_id при логине (диалог сохраняется); dependency `current_session`/`current_user` (зависит T005)
+- [X] T009 [P] Создать backend/app/events.py: helper `log_event(ticket_id, actor, action, payload)` — журнал FR-061 (зависит T005)
+- [X] T010 Создать backend/app/seed.py: 5 пользователей (3 студента, сотрудник, оператор), 5 сервисов (misis.ru/newlms real, 3 Wi-Fi emulated), документы и шаблоны БЗ по FR-030 + индексация embeddings при старте (идемпотентно; при недоступности API — keyword-деградация) (зависит T005, T007)
+- [X] T011 Собрать backend/app/main.py: FastAPI, include_router всех роутеров, startup → `create_all` + `seed()` (зависит T004-T010)
+- [X] T012 [P] Создать backend/app/routers/internal.py: `GET/POST /api/internal/tg/link`, `POST /api/internal/tg/link/confirm` (код, 3 попытки), заготовка `GET /api/internal/outbound`, `POST /api/internal/outbound/{id}/ack` — заголовок `X-Bot-Token` (зависит T005, T008)
 
 **Checkpoint**: `uvicorn app.main:app` стартует, сидирование отработало, `/api/health` и логин отвечают.
 
@@ -53,18 +53,18 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Создать backend/tests/test_agent.py: пайплайн с моком `llm.chat` — маршруты, сплиттер на 3 вопроса, confidence < 0.6 → escalate, safe-route при LLMUnavailable
-- [ ] T014 [P] [US1] Создать backend/tests/test_triggers.py: форс-эскалация по триггеру, повышение приоритета правилами, запрет понижения
+- [X] T013 [P] [US1] Создать backend/tests/test_agent.py: пайплайн с моком `llm.chat` — маршруты, сплиттер на 3 вопроса, confidence < 0.6 → escalate, safe-route при LLMUnavailable
+- [X] T014 [P] [US1] Создать backend/tests/test_triggers.py: форс-эскалация по триггеру, повышение приоритета правилами, запрет понижения
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Нода normalize в backend/app/agent.py: маскирование мата (словарь + `*`), определение языка, перевод через llm для не-ru
-- [ ] T016 [US1] Нода split в backend/app/agent.py: разбиение составного обращения на подзадачи (LLM → JSON-список)
-- [ ] T017 [US1] Нода classify в backend/app/agent.py: промпт классификатора (маршруты auto_check/kb/cert_order/escalate + service/category/priority/confidence/reason), валидация схемой из T006
-- [ ] T018 [P] [US1] Создать backend/app/triggers.py: настраиваемые правила (условие → форс-маршрут/эскалация; повышение приоритета без понижения, FR-011/FR-013)
-- [ ] T019 [P] [US1] Создать backend/app/tickets.py: жизненный цикл FR-015, дедупликация FR-014 (совпадение service+category по открытой заявке пользователя), номер `SUP-2026-<id>`
-- [ ] T020 [US1] Сборка StateGraph в backend/app/agent.py: ноды normalize→split→classify→triggers→execute_route→respond, conditional edges по route, счётчик tool_calls с лимитом 3 (FR-021) (зависит T015-T019)
-- [ ] T021 [US1] Создать backend/app/routers/requests.py: `POST /api/requests` (доступно гостю — авто-создание гостевой сессии; синхронный прогон графа, ответ по contracts/api.md), `POST /api/requests/{id}/reply` (автор или гостевая сессия-автор; диалог, ≤2 раундов FR-025, 409), `GET /api/requests` (только авторизованный, гостю 401 с предложением войти), `GET /api/requests/{id}` (автор/гостевая сессия/оператор, 403 чужое) (зависит T020)
+- [X] T015 [US1] Нода normalize в backend/app/agent.py: маскирование мата (словарь + `*`), определение языка, перевод через llm для не-ru
+- [X] T016 [US1] Нода split в backend/app/agent.py: разбиение составного обращения на подзадачи (LLM → JSON-список)
+- [X] T017 [US1] Нода classify в backend/app/agent.py: промпт классификатора (маршруты auto_check/kb/cert_order/escalate + service/category/priority/confidence/reason), валидация схемой из T006
+- [X] T018 [P] [US1] Создать backend/app/triggers.py: настраиваемые правила (условие → форс-маршрут/эскалация; повышение приоритета без понижения, FR-011/FR-013)
+- [X] T019 [P] [US1] Создать backend/app/tickets.py: жизненный цикл FR-015, дедупликация FR-014 (совпадение service+category по открытой заявке пользователя), номер `SUP-2026-<id>`
+- [X] T020 [US1] Сборка StateGraph в backend/app/agent.py: ноды normalize→split→classify→triggers→execute_route→respond, conditional edges по route, счётчик tool_calls с лимитом 3 (FR-021) (зависит T015-T019)
+- [X] T021 [US1] Создать backend/app/routers/requests.py: `POST /api/requests` (доступно гостю — авто-создание гостевой сессии; синхронный прогон графа, ответ по contracts/api.md), `POST /api/requests/{id}/reply` (автор или гостевая сессия-автор; диалог, ≤2 раундов FR-025, 409), `GET /api/requests` (только авторизованный, гостю 401 с предложением войти), `GET /api/requests/{id}` (автор/гостевая сессия/оператор, 403 чужое) (зависит T020)
 
 **Checkpoint**: сценарии 1-2, 6 quickstart'а зелёные; тесты T013/T014 green.
 
@@ -78,15 +78,15 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] Создать backend/tests/test_tools.py: мок httpx — 200/301/500/таймаут для check_site (критерий 2xx/3xx ≤5 c), check_wifi по состоянию services, ветка сбоя без вызова LLM
+- [X] T022 [P] [US2] Создать backend/tests/test_tools.py: мок httpx — 200/301/500/таймаут для check_site (критерий 2xx/3xx ≤5 c), check_wifi по состоянию services, ветка сбоя без вызова LLM
 
 ### Implementation for User Story 2
 
-- [ ] T023 [US2] Создать backend/app/tools.py: реестр инструментов `{name: {type: exec|llm, fn, schema}}` + диспетчер вызова (журнал в events, инкремент tool_calls)
-- [ ] T024 [P] [US2] Реализовать `check_site` и `check_lms` в backend/app/tools.py: httpx GET, критерий доступности FR-022/023 (зависит T023)
-- [ ] T025 [P] [US2] Реализовать `check_wifi` в backend/app/tools.py: чтение эмулируемого состояния services (зависит T023)
-- [ ] T026 [US2] Нода execute_route для auto_check в backend/app/agent.py: вызов проверки → запись service_checks → шаблонный уточняющий вопрос (норма) или шаблонное извещение outage_notice без LLM (сбой) (зависит T020, T023-T025)
-- [ ] T027 [US2] Правило «подтверждённый сбой → priority critical» в backend/app/triggers.py (зависит T018, T026)
+- [X] T023 [US2] Создать backend/app/tools.py: реестр инструментов `{name: {type: exec|llm, fn, schema}}` + диспетчер вызова (журнал в events, инкремент tool_calls)
+- [X] T024 [P] [US2] Реализовать `check_site` и `check_lms` в backend/app/tools.py: httpx GET, критерий доступности FR-022/023 (зависит T023)
+- [X] T025 [P] [US2] Реализовать `check_wifi` в backend/app/tools.py: чтение эмулируемого состояния services (зависит T023)
+- [X] T026 [US2] Нода execute_route для auto_check в backend/app/agent.py: вызов проверки → запись service_checks → шаблонный уточняющий вопрос (норма) или шаблонное извещение outage_notice без LLM (сбой) (зависит T020, T023-T025)
+- [X] T027 [US2] Правило «подтверждённый сбой → priority critical» в backend/app/triggers.py (зависит T018, T026)
 
 **Checkpoint**: сценарий 3 quickstart'а зелёный; T022 green.
 
@@ -100,13 +100,13 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] Создать backend/tests/test_kb.py: косинус-retrieval с моком embed, порог 0.5, keyword-fallback, пустая выдача → маршрут escalate
+- [X] T028 [P] [US3] Создать backend/tests/test_kb.py: косинус-retrieval с моком embed, порог 0.5, keyword-fallback, пустая выдача → маршрут escalate
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] Создать backend/app/kb.py: индексация (embed при сиде/подтверждении), retrieval top-3 косинус (чистый Python), порог, keyword-деградация (зависит T007)
-- [ ] T030 [US3] Инструмент `kb_agent` (type llm) в backend/app/tools.py: переформулировка запроса, разделение на подзапросы, сборка финального ответа по источникам, отказ при пустоте (зависит T023, T029)
-- [ ] T031 [US3] Нода execute_route для kb в backend/app/agent.py (зависит T020, T030)
+- [X] T029 [US3] Создать backend/app/kb.py: индексация (embed при сиде/подтверждении), retrieval top-3 косинус (чистый Python), порог, keyword-деградация (зависит T007)
+- [X] T030 [US3] Инструмент `kb_agent` (type llm) в backend/app/tools.py: переформулировка запроса, разделение на подзапросы, сборка финального ответа по источникам, отказ при пустоте (зависит T023, T029)
+- [X] T031 [US3] Нода execute_route для kb в backend/app/agent.py (зависит T020, T030)
 
 **Checkpoint**: сценарий 4 quickstart'а зелёный; T028 green.
 
@@ -120,13 +120,13 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Tests for User Story 4
 
-- [ ] T032 [P] [US4] Создать backend/tests/test_certs.py: создание заказа, цепочка статусов, 409 на обратный/скачкообразный переход, заказ без авторизации → 401
+- [X] T032 [P] [US4] Создать backend/tests/test_certs.py: создание заказа, цепочка статусов, 409 на обратный/скачкообразный переход, заказ без авторизации → 401
 
 ### Implementation for User Story 4
 
-- [ ] T033 [US4] Создать backend/app/certs.py: каталог FR-041 (5 типов с описаниями), инструмент `order_certificate` (exec), создание заказа из профиля сессии (зависит T023)
-- [ ] T034 [US4] Роутеры backend/app/routers/certs.py (`GET /api/certs/catalog`, `POST /api/certs/orders`, `GET /api/certs/orders`) и admin-часть в backend/app/routers/admin.py (`GET /api/admin/certs/orders`, `PATCH /api/admin/certs/orders/{id}` с проверкой цепочки) (зависит T033)
-- [ ] T035 [US4] Нода execute_route для cert_order в backend/app/agent.py: регламент из БЗ → заказ → реакция cert_ordered; гость без user_id → реакция `auth_required` («войдите по корпоративной почте МИСИС»), заказ НЕ создаётся (FR-016/FR-043) (зависит T020, T033)
+- [X] T033 [US4] Создать backend/app/certs.py: каталог FR-041 (5 типов с описаниями), инструмент `order_certificate` (exec), создание заказа из профиля сессии (зависит T023)
+- [X] T034 [US4] Роутеры backend/app/routers/certs.py (`GET /api/certs/catalog`, `POST /api/certs/orders`, `GET /api/certs/orders`) и admin-часть в backend/app/routers/admin.py (`GET /api/admin/certs/orders`, `PATCH /api/admin/certs/orders/{id}` с проверкой цепочки) (зависит T033)
+- [X] T035 [US4] Нода execute_route для cert_order в backend/app/agent.py: регламент из БЗ → заказ → реакция cert_ordered; гость без user_id → реакция `auth_required` («войдите по корпоративной почте МИСИС»), заказ НЕ создаётся (FR-016/FR-043) (зависит T020, T033)
 
 **Checkpoint**: сценарий 5 quickstart'а зелёный; T032 green.
 
@@ -140,9 +140,9 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Implementation for User Story 5
 
-- [ ] T036 [US5] Инструмент `summarize` (type llm) в backend/app/tools.py: саммари сути, сводка проверок, рекомендация, причина эскалации (зависит T023)
-- [ ] T037 [US5] Нода escalate в backend/app/agent.py: формирование пакета FR-060 + запись в outbound_messages дежурному (зависит T020, T036)
-- [ ] T038 [US5] В backend/app/routers/admin.py: `GET /api/admin/queue` (сортировка priority→created_at), `GET /api/admin/escalations/{request_id}`, `POST /api/admin/escalations/{request_id}/close` (resolution, без KB-черновика) (зависит T037)
+- [X] T036 [US5] Инструмент `summarize` (type llm) в backend/app/tools.py: саммари сути, сводка проверок, рекомендация, причина эскалации (зависит T023)
+- [X] T037 [US5] Нода escalate в backend/app/agent.py: формирование пакета FR-060 + запись в outbound_messages дежурному (зависит T020, T036)
+- [X] T038 [US5] В backend/app/routers/admin.py: `GET /api/admin/queue` (сортировка priority→created_at), `GET /api/admin/escalations/{request_id}`, `POST /api/admin/escalations/{request_id}/close` (resolution, без KB-черновика) (зависит T037)
 
 **Checkpoint**: эскалация видна в очереди и открывается пакетом; закрытие меняет статус на «закрыта».
 
@@ -156,12 +156,12 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Tests for User Story 6
 
-- [ ] T039 [P] [US6] Создать backend/tests/test_incidents.py: детектор (окно, distinct users, порог), идемпотентность уведомления, привязка к активному инциденту, broadcast
+- [X] T039 [P] [US6] Создать backend/tests/test_incidents.py: детектор (окно, distinct users, порог), идемпотентность уведомления, привязка к активному инциденту, broadcast
 
 ### Implementation for User Story 6
 
-- [ ] T040 [US6] Создать backend/app/incidents.py: SQL-детектор (окно 15 мин настраиваемо), создание инцидента, outbound-уведомление, привязка новых обращений + шаблонное извещение (FR-052) (зависит T005, T020)
-- [ ] T041 [US6] В backend/app/routers/admin.py: `GET /api/admin/incidents`, `POST /api/admin/incidents/{id}/broadcast` (шаблон из БЗ или custom text), `POST /api/admin/incidents/{id}/resolve`; достроить `/api/internal/outbound*` в routers/internal.py (зависит T040)
+- [X] T040 [US6] Создать backend/app/incidents.py: SQL-детектор (окно 15 мин настраиваемо), создание инцидента, outbound-уведомление, привязка новых обращений + шаблонное извещение (FR-052) (зависит T005, T020)
+- [X] T041 [US6] В backend/app/routers/admin.py: `GET /api/admin/incidents`, `POST /api/admin/incidents/{id}/broadcast` (шаблон из БЗ или custom text), `POST /api/admin/incidents/{id}/resolve`; достроить `/api/internal/outbound*` в routers/internal.py (зависит T040)
 
 **Checkpoint**: сценарий 7 quickstart'а зелёный; T039 green.
 
@@ -175,19 +175,19 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 ### Implementation for User Story 7
 
-- [ ] T042 [US7] Инструмент `draft_kb_article` (type llm) в backend/app/tools.py: черновик статьи (title/body/topic) по переписке и resolution (зависит T023)
-- [ ] T043 [US7] В backend/app/routers/admin.py + backend/app/kb.py: close с `add_to_kb=true` → kb_draft (confirmed=false); `POST /api/admin/kb/articles/{id}/confirm` → confirmed + индексация embedding (зависит T038, T042, T029)
+- [X] T042 [US7] Инструмент `draft_kb_article` (type llm) в backend/app/tools.py: черновик статьи (title/body/topic) по переписке и resolution (зависит T023)
+- [X] T043 [US7] В backend/app/routers/admin.py + backend/app/kb.py: close с `add_to_kb=true` → kb_draft (confirmed=false); `POST /api/admin/kb/articles/{id}/confirm` → confirmed + индексация embedding (зависит T038, T042, T029)
 
 **Checkpoint**: сценарий 8 quickstart'а зелёный.
 
 ---
 
 ## Phase 10: Polish & Cross-Cutting Concerns
-
-- [ ] T044 [P] Создать backend/app/metrics.py + `GET /api/admin/metrics` в routers/admin.py: % без человека, среднее время первой реакции, инциденты (из events, FR-062)
-- [ ] T045 [P] В backend/app/routers/admin.py: `GET /api/admin/status-board`, `PATCH /api/admin/services/{id}` (409 для real), `GET /api/admin/tools`, `POST /api/admin/tools/{name}/invoke` (check_site/check_lms/check_wifi/simulate_wave)
-- [ ] T046 [P] Обновить README.md (запуск нового стека), .ai/SESSION_STATE.md, .ai/PROJECT_MAP.md, .ai/STACK.md под новую архитектуру
-- [ ] T047 Прогон quickstart.md целиком (8 сценариев) + `pytest -v` green
+ 
+- [X] T044 [P] Создать backend/app/metrics.py + `GET /api/admin/metrics` в routers/admin.py: % без человека, среднее время первой реакции, инциденты (из events, FR-062)
+- [X] T045 [P] В backend/app/routers/admin.py: `GET /api/admin/status-board`, `PATCH /api/admin/services/{id}` (409 для real), `GET /api/admin/tools`, `POST /api/admin/tools/{name}/invoke` (check_site/check_lms/check_wifi/simulate_wave)
+- [X] T046 [P] Обновить README.md (запуск нового стека), .ai/SESSION_STATE.md, .ai/PROJECT_MAP.md, .ai/STACK.md под новую архитектуру
+- [X] T047 Прогон quickstart.md целиком (8 сценариев) + `pytest -v` green
 
 ---
 

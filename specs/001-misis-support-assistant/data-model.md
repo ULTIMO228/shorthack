@@ -138,9 +138,10 @@
 |---|---|---|
 | id | Integer PK | |
 | chat_id | BigInteger, unique | |
-| user_id | FK users.id, null | null до привязки |
+| user_id | FK users.id, **null** | null до привязки; при `awaiting_confirm` — целевой пользователь (подтверждается кодом → `idle`) |
 | state | String | `awaiting_email` / `awaiting_confirm` / `idle` / `dialog:<request_id>` |
 | confirm_code | String(6), null | код привязки (эмуляция) |
+| confirm_attempts | Integer | счётчик неверных вводов кода (лимит 3 — сброс в `awaiting_email`) |
 | created_at | DateTime | |
 
 ### outbound_messages — Исходящие в бот (фича 003)

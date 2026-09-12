@@ -1,6 +1,8 @@
 # Python
 __pycache__/
 *.pyc
+.coverage
+.pytest_cache/
 .venv/
 venv/
 
@@ -11,6 +13,10 @@ venv/
 # Node
 node_modules/
 dist/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
 
 # OS
 .DS_Store
