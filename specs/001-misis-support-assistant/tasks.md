@@ -35,7 +35,7 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 - [ ] T005 Создать backend/app/models.py: все таблицы по data-model.md (users, sessions, requests, subtasks, tickets, services, service_checks, kb_articles, cert_orders, incidents, events, tg_links, outbound_messages) (зависит T004)
 - [ ] T006 [P] Создать backend/app/schemas.py: DTO всех эндпоинтов из contracts/api.md + Pydantic-схема JSON-ответа классификатора (route/service/category/priority/confidence/reason)
 - [ ] T007 Создать backend/app/llm.py: клиент Yandex AI Studio — `chat()` и `embed()` через httpx (`Authorization: Api-Key`, `OpenAI-Project`, таймаут 25 c), JSON-парсинг ответа + Pydantic-валидация + 1 retry, исключение `LLMUnavailable` (зависит T006)
-- [ ] T008 [P] Создать backend/app/auth.py + backend/app/routers/auth.py: `POST /api/auth/login` (домен @misis.ru/@edu.misis.ru, автосоздание пользователя, cookie `session_id` HttpOnly), `POST /api/auth/logout`, `GET /api/auth/me`; dependency `current_user` (зависит T005)
+- [ ] T008 [P] Создать backend/app/auth.py + backend/app/routers/auth.py: `POST /api/auth/login` (домен @misis.ru/@edu.misis.ru, автосоздание пользователя, cookie `session_id` HttpOnly), `POST /api/auth/logout`, `GET /api/auth/me` (200 `{user}` или `{user:null, guest:true}`); гостевые сессии: авто-создание анонимной сессии при первом обращении без логина, привязка гостевой сессии к user_id при логине (диалог сохраняется); dependency `current_session`/`current_user` (зависит T005)
 - [ ] T009 [P] Создать backend/app/events.py: helper `log_event(ticket_id, actor, action, payload)` — журнал FR-061 (зависит T005)
 - [ ] T010 Создать backend/app/seed.py: 5 пользователей (3 студента, сотрудник, оператор), 5 сервисов (misis.ru/newlms real, 3 Wi-Fi emulated), документы и шаблоны БЗ по FR-030 + индексация embeddings при старте (идемпотентно; при недоступности API — keyword-деградация) (зависит T005, T007)
 - [ ] T011 Собрать backend/app/main.py: FastAPI, include_router всех роутеров, startup → `create_all` + `seed()` (зависит T004-T010)
@@ -64,7 +64,7 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 - [ ] T018 [P] [US1] Создать backend/app/triggers.py: настраиваемые правила (условие → форс-маршрут/эскалация; повышение приоритета без понижения, FR-011/FR-013)
 - [ ] T019 [P] [US1] Создать backend/app/tickets.py: жизненный цикл FR-015, дедупликация FR-014 (совпадение service+category по открытой заявке пользователя), номер `SUP-2026-<id>`
 - [ ] T020 [US1] Сборка StateGraph в backend/app/agent.py: ноды normalize→split→classify→triggers→execute_route→respond, conditional edges по route, счётчик tool_calls с лимитом 3 (FR-021) (зависит T015-T019)
-- [ ] T021 [US1] Создать backend/app/routers/requests.py: `POST /api/requests` (синхронный прогон графа, ответ по contracts/api.md), `POST /api/requests/{id}/reply` (диалог, ≤2 раундов FR-025, 409), `GET /api/requests`, `GET /api/requests/{id}` (403 чужое) (зависит T020)
+- [ ] T021 [US1] Создать backend/app/routers/requests.py: `POST /api/requests` (доступно гостю — авто-создание гостевой сессии; синхронный прогон графа, ответ по contracts/api.md), `POST /api/requests/{id}/reply` (автор или гостевая сессия-автор; диалог, ≤2 раундов FR-025, 409), `GET /api/requests` (только авторизованный, гостю 401 с предложением войти), `GET /api/requests/{id}` (автор/гостевая сессия/оператор, 403 чужое) (зависит T020)
 
 **Checkpoint**: сценарии 1-2, 6 quickstart'а зелёные; тесты T013/T014 green.
 
@@ -126,7 +126,7 @@ description: "Задачи реализации фичи 001 — ядро ИИ-�
 
 - [ ] T033 [US4] Создать backend/app/certs.py: каталог FR-041 (5 типов с описаниями), инструмент `order_certificate` (exec), создание заказа из профиля сессии (зависит T023)
 - [ ] T034 [US4] Роутеры backend/app/routers/certs.py (`GET /api/certs/catalog`, `POST /api/certs/orders`, `GET /api/certs/orders`) и admin-часть в backend/app/routers/admin.py (`GET /api/admin/certs/orders`, `PATCH /api/admin/certs/orders/{id}` с проверкой цепочки) (зависит T033)
-- [ ] T035 [US4] Нода execute_route для cert_order в backend/app/agent.py: регламент из БЗ → заказ → реакция cert_ordered (зависит T020, T033)
+- [ ] T035 [US4] Нода execute_route для cert_order в backend/app/agent.py: регламент из БЗ → заказ → реакция cert_ordered; гость без user_id → реакция `auth_required` («войдите по корпоративной почте МИСИС»), заказ НЕ создаётся (FR-016/FR-043) (зависит T020, T033)
 
 **Checkpoint**: сценарий 5 quickstart'а зелёный; T032 green.
 
