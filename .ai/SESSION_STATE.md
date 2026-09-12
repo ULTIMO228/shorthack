@@ -38,7 +38,13 @@
   - routers/certs.py: `GET /api/certs/catalog` (публичный), `POST /api/certs/orders` (авторизованный, 401 гостю), `GET /api/certs/orders` (мои заказы desc)
   - routers/admin.py: `GET /api/admin/certs/orders` (список с профилями), `PATCH /api/admin/certs/orders/{order_id}` (смена статуса по цепочке, 409 при нарушении)
   - agent.py: нода `node_cert_order` (гость → `auth_required`, детерминированный подбор типа, неясный тип → `clarification`, вызов инструмента `order_certificate` → реакция `cert_ordered` с регламентом, тикет «решена»), ребро в графе
-  - main.py: подключён `certs_router`
+- [x] **Фича 001 Ph7 (US5, T036–T038): Эскалация оператору с саммари**:
+  - `tools.py`: Pydantic-схема `SummarizePayload`, сборщик проверок `collect_checks(db, request_id)` по `service_checks`, инструмент `summarize` (type="llm", сборка summary, checks, recommendation, why_escalated), регистрация в `TOOLS`.
+  - `agent.py`: константа `ESCALATION_FALLBACK_RECOMMENDATION`, функции `build_escalation_package`, `notify_duty_operator`, обновление `node_escalate` (вызов summarize через `call_tool`, детерминированный fallback при `tool_calls>=3` или недоступности LLM, сохранение события `escalation_package`, защита статусной цепочки).
+  - `routers/requests.py`: helper `_build_request_detail` вынесен для повторного использования.
+  - `routers/admin.py`: `GET /api/admin/queue` (сортировка priority critical→low → created_at asc, гость user:null), `GET /api/admin/escalations/{request_id}` (все блоки FR-060), `POST /api/admin/escalations/{request_id}/close` (цепочка FR-015, валидация 422 на пустую резолюцию, 404 на неэскалированное).
+  - Тесты: 11 тестов в `tests/test_escalations.py` (FR-060, очередь, сценарий 4b quickstart, перевод, force_escalate, fallback при сбое LLM, сохранение статуса тикета, закрытие эскалации с цепочкой FR-015, RBAC оператора, однократное уведомление дежурному, гостевой заказ без эскалации, гость user=null в очереди) — 100% зелёные.
+
 - [x] **Фича 001 Ph8 (US6, T039–T041): Детектор массовых сбоев и массовый ответ**:
   - incidents.py: скользящее окно 15 мин (DETECTION_WINDOW_MIN=15, threshold=3 по distinct-авторам), создание активного инцидента + синхронное уведомление дежурному в outbound_messages (FR-051), привязка тикетов волны link_wave_tickets (FR-050), привязка новых обращений без повторного уведомления с шаблоном без LLM (FR-052), поднятие приоритета до high (FR-011) с маркером в route_reason (FR-012), broadcast по авторам (FR-053), resolve (409 при закрытом)
   - agent.py: нода incident_check после ensure_ticket → привязан/создан → outage_notice, тикет «решена», без вызова автодиагностики/LLM (экономия лимита FR-021)

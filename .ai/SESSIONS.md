@@ -148,6 +148,23 @@ Caution:
   ⚠️ В close_escalation dialog_lines читаются из events тикета (диалог + реакции) с безопасным json.loads
 ---
 
+## 2026-09-12T15:47:00+03:00 | @antigravity | branch:main | mode:speckit-implement
+Focus: Фича 001 Ph7 — US5 эскалация оператору с саммари (T036–T038)
+Done: ✅
+  - backend/app/tools.py: Pydantic-модель `SummarizePayload`, сборщик проверок `collect_checks(db, request_id)` из `service_checks`, инструмент `summarize` (type="llm"), регистрация в `TOOLS`
+  - backend/app/agent.py: константа `ESCALATION_FALLBACK_RECOMMENDATION`, `build_escalation_package`, `notify_duty_operator`, обновление `node_escalate` (вызов summarize через `call_tool`, fallback при `tool_calls>=3`/сбое LLM, сохранение события `escalation_package`, защита статусной цепочки)
+  - backend/app/routers/requests.py: helper `_build_request_detail` вынесен для повторного использования в карточке эскалации
+  - backend/app/routers/admin.py: `GET /api/admin/queue` (сортировка priority critical→low → created_at asc, гость user:null), `GET /api/admin/escalations/{request_id}` (все блоки пакета FR-060), `POST /api/admin/escalations/{request_id}/close` (цепочка FR-015, валидация 422 на пустую резолюцию, 404 на неэскалированное)
+  - backend/tests/test_escalations.py: 11 тестов (пакет FR-060, очередь, сценарий 4b quickstart, перевод, force_escalate, fallback при падении LLM, сохранение статуса тикета, закрытие эскалации с цепочкой FR-015, RBAC оператора, однократное уведомление дежурному, гостевой заказ без эскалации, гость user=null в очереди) — 11/11 зелёные
+  - specs/001-misis-support-assistant/tasks.md: задачи T036–T038 отмечены [X]
+Decisions: 🧠
+  - Решение сбоев LLM в summarize: graceful fallback с безопасными значениями из подзадачи и исходного обращения, тикет не падает
+  - Статусная защита: если тикет уже был в статусе «решена» (например, после outage), повторная эскалация не переводит его в «в работе», сохраняя корректность статус-машины FR-015
+  - Идемпотентность закрытия тикета: повторный close возвращает 200 OK в соответствии с contracts/api.md
+Caution:
+  ⚠️ В node_escalate request_id извлекается с fallback на ticket.request_id и subtask.request_id, если отсутствует в state
+---
+
 ## 2026-09-12T15:49:00+03:00 | @antigravity | branch:main | mode:speckit-implement
 Focus: Фича 001 Ph10 — Polish: метрики, админка, доки (T044–T047)
 Done: ✅
