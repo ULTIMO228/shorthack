@@ -550,9 +550,14 @@ def collect_checks(db: OrmSession, request_id: int) -> list[dict[str, Any]]:
         .order_by(ServiceCheck.id)
     ).all()
     results: list[dict[str, Any]] = []
+    service_ids = {check.service_id for check in checks if check.service_id is not None}
+    services_map: dict[int, str] = {}
+    if service_ids:
+        services = db.scalars(select(Service).where(Service.id.in_(service_ids))).all()
+        services_map = {s.id: s.name for s in services if s.name}
+
     for check in checks:
-        service = db.get(Service, check.service_id)
-        service_name = service.name if service and service.name else "сервис"
+        service_name = services_map.get(check.service_id) or "сервис"
         if check.http_code is not None:
             note = f"HTTP {check.http_code}, {check.latency_ms or 0} мс"
         else:

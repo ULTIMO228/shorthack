@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -162,6 +162,15 @@ def my_requests(
     return items
 
 
+def _safe_json_loads(raw: str | None, default: Any = None) -> Any:
+    if not raw:
+        return default
+    try:
+        return json.loads(raw)
+    except Exception:
+        return default
+
+
 def _build_request_detail(db: OrmSession, request: Request) -> RequestDetail:
     """Сборка детального представления обращения (FR-060, FR-061)."""
     own_ticket = request.tickets[0] if request.tickets else None
@@ -176,7 +185,9 @@ def _build_request_detail(db: OrmSession, request: Request) -> RequestDetail:
 
     dialog: list[DialogMessage] = []
     for event in events:
-        payload = json.loads(event.payload or "{}")
+        payload = _safe_json_loads(event.payload, {})
+        if not isinstance(payload, dict):
+            payload = {}
         if event.action == "dialog" and payload.get("role") in ("user", "agent"):
             dialog.append(
                 DialogMessage(role=payload["role"], text=payload["text"], at=event.created_at)
@@ -197,7 +208,7 @@ def _build_request_detail(db: OrmSession, request: Request) -> RequestDetail:
             EventOut(
                 actor=e.actor or "",
                 action=e.action or "",
-                payload=json.loads(e.payload) if e.payload else None,
+                payload=_safe_json_loads(e.payload, None),
                 created_at=e.created_at,
             )
             for e in events
