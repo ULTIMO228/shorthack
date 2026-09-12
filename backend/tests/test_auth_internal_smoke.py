@@ -3,15 +3,20 @@
 from sqlalchemy.orm import sessionmaker
 
 from app import events, models
+from app.auth import hash_password
 
 
-def test_login_creates_user_and_sets_cookie(client):
-    r = client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+def test_login_with_correct_password_sets_cookie(client):
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "ivanov@misis.ru", "password": "student123"},
+    )
     assert r.status_code == 200
     user = r.json()["user"]
     assert user["email"] == "ivanov@misis.ru"
-    assert user["full_name"] == "Ivanov"
+    assert user["full_name"] == "Иванов Иван"
     assert user["role"] == "student"
+    assert "password_hash" not in user  # хэш наружу не отдаём
     assert "session_id" in client.cookies
 
     me = client.get("/api/auth/me")
@@ -21,15 +26,52 @@ def test_login_creates_user_and_sets_cookie(client):
     assert body["user"]["email"] == "ivanov@misis.ru"
 
 
-def test_login_accepts_edu_domain_and_builds_full_name(client):
-    r = client.post("/api/auth/login", json={"email": "petrov.ivan@edu.misis.ru"})
+def test_login_with_wrong_password_rejected(client):
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "ivanov@misis.ru", "password": "wrong-password"},
+    )
+    assert r.status_code == 401
+    assert r.json()["detail"] == "Неверная почта или пароль"
+
+
+def test_login_unknown_email_rejected(client):
+    """Неизвестный email — та же 401, без раскрытия, что email не найден."""
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "ghost@misis.ru", "password": "student123"},
+    )
+    assert r.status_code == 401
+    assert r.json()["detail"] == "Неверная почта или пароль"
+
+
+def test_login_accepts_edu_domain_and_returns_full_name(client, db_engine):
+    """Профиль создан в БД (посев/админ) — вход по edu-домену с паролем работает."""
+    maker = sessionmaker(bind=db_engine, expire_on_commit=False)
+    with maker() as db:
+        db.add(
+            models.User(
+                email="petrov.ivan@edu.misis.ru",
+                full_name="Petrov Ivan",
+                role="student",
+                password_hash=hash_password("student123"),
+            )
+        )
+        db.commit()
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "petrov.ivan@edu.misis.ru", "password": "student123"},
+    )
     assert r.status_code == 200
     assert r.json()["user"]["full_name"] == "Petrov Ivan"
 
 
 def test_login_rejects_non_misis_email(client):
     for email in ("user@gmail.com", "ivanov@misis.ru.evil.com", "@misis.ru"):
-        r = client.post("/api/auth/login", json={"email": email})
+        r = client.post(
+            "/api/auth/login",
+            json={"email": email, "password": "student123"},
+        )
         assert r.status_code == 400
         assert "МИСИС" in r.json()["detail"]
 
@@ -50,7 +92,10 @@ def test_guest_me_creates_guest_session(client, db_engine):
 def test_guest_session_bound_to_user_on_login(client, db_engine):
     # Гость получает сессию, затем логинится — токен тот же, привязка к user_id
     guest_token = client.get("/api/auth/me").cookies["session_id"]
-    r = client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "ivanov@misis.ru", "password": "student123"},
+    )
     assert r.status_code == 200
     assert client.cookies["session_id"] == guest_token
 
@@ -62,10 +107,37 @@ def test_guest_session_bound_to_user_on_login(client, db_engine):
     assert db.query(models.Session).count() == 1
 
 
+def test_guest_requests_bound_on_password_login(client, db_engine):
+    """FR-016/SC-005: гостевые обращения сессии привязываются к профилю при парольном входе."""
+    maker = sessionmaker(bind=db_engine, expire_on_commit=False)
+    with maker() as db:
+        db.add(
+            models.Request(
+                session_id=client.get("/api/auth/me").cookies["session_id"],
+                channel="web",
+                raw_text="текст",
+                masked_text="текст",
+            )
+        )
+        db.commit()
+    r = client.post(
+        "/api/auth/login",
+        json={"email": "ivanov@misis.ru", "password": "student123"},
+    )
+    assert r.status_code == 200
+    with maker() as db:
+        req = db.query(models.Request).one()
+        user = db.query(models.User).filter_by(email="ivanov@misis.ru").one()
+        assert req.user_id == user.id
+
+
 def test_logout_deauths_session_and_keeps_history(client, db_engine):
     """Выход — деавторизация (user_id → null), не удаление: сессия живёт,
     обращения на неё сохраняются (FR-016; requests.session_id NOT NULL)."""
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post(
+        "/api/auth/login",
+        json={"email": "ivanov@misis.ru", "password": "student123"},
+    )
     token = client.cookies["session_id"]
     db = sessionmaker(bind=db_engine, expire_on_commit=False)()
     db.add(models.Request(session_id=token, channel="web", raw_text="текст", masked_text="текст"))
@@ -115,7 +187,10 @@ def test_internal_outbound_polling_and_ack(client, bot_token, db_engine):
 
 def test_tg_link_flow_confirm_and_attempts_limit(client, bot_token):
     headers = {"X-Bot-Token": bot_token}
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post(
+        "/api/auth/login",
+        json={"email": "ivanov@misis.ru", "password": "student123"},
+    )
 
     # Неизвестная почта → пользователь создаётся (сценарий S1: привязка без веб-входа)
     r = client.post(
@@ -162,6 +237,9 @@ def test_tg_link_flow_confirm_and_attempts_limit(client, bot_token):
 
     state = client.get("/api/internal/tg/link", params={"chat_id": 123456}, headers=headers)
     assert state.json()["state"] == "idle"
+    assert state.json()["ok"] is True
+    assert state.json()["user"]["email"] == "ivanov@misis.ru"
+    assert state.json()["email"] == "ivanov@misis.ru"
 
 
 def test_log_event_writes_json_payload(db_engine):

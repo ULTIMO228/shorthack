@@ -22,6 +22,8 @@ def yandex_env(monkeypatch):
     monkeypatch.setenv("YANDEX_FOLDER_ID", "test-folder")
     monkeypatch.delenv("YANDEX_MODEL_CLASSIFY", raising=False)
     monkeypatch.delenv("YANDEX_MODEL_GENERATE", raising=False)
+    monkeypatch.delenv("YANDEX_MODEL_EMBED_DOC", raising=False)
+    monkeypatch.delenv("YANDEX_MODEL_EMBED_QUERY", raising=False)
     return monkeypatch
 
 
@@ -87,7 +89,10 @@ def test_chat_success_normalizes_messages_and_headers(yandex_env, fake_http):
     call = fake_http.calls[0]
     assert call["path"] == "/chat/completions"
     assert call["body"]["model"] == "gpt://test-folder/yandexgpt/latest"
-    assert call["body"]["messages"] == [{"role": "user", "content": "как дела"}]
+    assert call["body"]["messages"] == [
+        {"role": "system", "content": "Отвечай только на русском языке."},
+        {"role": "user", "content": "как дела"},
+    ]
     assert call["headers"]["Authorization"] == "Api-Key test-key"
     assert call["headers"]["OpenAI-Project"] == "test-folder"
 

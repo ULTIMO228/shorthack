@@ -6,15 +6,18 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import secrets
 from typing import Annotated
+
+logger = logging.getLogger("internal")
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session as OrmSession
 
-from app.auth import full_name_from_email, is_misis_email
+from app.auth import full_name_from_email, hash_password, is_misis_email
 from app.db import get_session
 from app.models import OutboundMessage, TgLink, User
 from app.schemas import (
@@ -95,7 +98,21 @@ def tg_link_state(
 ) -> TgLinkStateResponse:
     """Состояние привязки чата; неизвестному чату создаётся запись awaiting_email."""
     link = _get_or_create_link(db, chat_id)
-    return TgLinkStateResponse(chat_id=link.chat_id, user_id=link.user_id, state=link.state)
+    user_out = None
+    email = None
+    if link.user_id:
+        u = db.get(User, link.user_id)
+        if u:
+            user_out = UserOut.model_validate(u)
+            email = u.email
+    return TgLinkStateResponse(
+        ok=True,
+        chat_id=link.chat_id,
+        user_id=link.user_id,
+        state=link.state,
+        user=user_out,
+        email=email,
+    )
 
 
 @router.post("/tg/link", response_model=TgLinkUpsertResponse, dependencies=[BotAuth])
@@ -116,7 +133,13 @@ def tg_link_start(
         )
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=email, full_name=full_name_from_email(email), role="student")
+        # синтетический пользователь бота: пароль не задаётся (случайный хэш)
+        user = User(
+            email=email,
+            full_name=full_name_from_email(email),
+            role="student",
+            password_hash=hash_password(secrets.token_urlsafe(16)),
+        )
         db.add(user)
         db.flush()
     link = _get_or_create_link(db, body.chat_id)
@@ -125,6 +148,8 @@ def tg_link_start(
     link.confirm_code = f"{secrets.randbelow(1_000_000):06d}"
     link.confirm_attempts = 0
     db.commit()
+    logger.info("🔑 [DEMO] Код подтверждения для chat_id=%s (%s): %s", body.chat_id, email, link.confirm_code)
+    print(f"\n=======================================================\n🔑 КОД ПОДТВЕРЖДЕНИЯ ДЛЯ {body.chat_id}: {link.confirm_code}\n=======================================================\n", flush=True)
     return TgLinkUpsertResponse(ok=True, confirm_code=link.confirm_code)
 
 

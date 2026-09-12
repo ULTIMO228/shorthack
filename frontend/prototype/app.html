@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Обращение · Помощник поддержки МИСИС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <style>
+    /* Чтобы вся навигация шапки помещалась на десктопе без обрезки */
+    .header-in{gap:6px}
+    .header-right{gap:8px}
+    .nav{margin-left:2px;gap:0}
+    .nav-btn{padding:8px 7px;font-size:12.5px}
+    .nav-label{margin:0 3px 0 8px}
+    .chip-profile{padding:4px 8px 4px 4px}
+    /* На мобильных шапка переносится: лого+профиль, ниже — навигация */
+    @media (max-width:768px){
+      .header-in{flex-wrap:wrap;height:auto;padding:10px 16px;row-gap:6px}
+      .nav{order:3;width:100%;margin-left:0}
+      .header-right{margin-left:auto;flex-wrap:nowrap;row-gap:6px}
+      .chip-profile{padding:4px}
+      .chip-profile div{display:none}
+      .header-right .btn-sm{font-size:0;gap:0;padding:0 9px}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-decor"></div>
+
+  <header class="header"><div class="header-in">
+    <a class="logo" href="app.html"><div class="logo-mark">М</div><div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div></a>
+    <nav class="nav">
+      <a class="nav-btn active" href="app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Обращение</a>
+      <a class="nav-btn" href="cabinet.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Кабинет</a>
+      <span class="nav-label">Админка</span>
+      <a class="nav-btn" href="admin-queue.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>Очередь</a>
+      <a class="nav-btn" href="admin-ticket.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>Эскалация</a>
+      <a class="nav-btn" href="admin-certs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>Заказы</a>
+      <a class="nav-btn" href="admin-tools.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Инструменты</a>
+      <a class="nav-btn" href="admin-metrics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>Метрики</a>
+    </nav>
+    <div class="header-right">
+      <div class="chip-profile"><span class="chip-ava">ИИ</span><div><b>Иванов Иван</b><span>ИТ-24</span></div></div>
+      <a class="btn btn-ghost btn-sm" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Выйти</a>
+    </div>
+  </div></header>
+
+  <main class="wrap" style="padding:28px 0 80px">
+    <div class="grid-2">
+
+      <!-- Левая колонка: новое обращение -->
+      <div class="card anim" style="--i:1">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg>
+          Новое обращение
+        </div>
+
+        <label class="field-label" for="req-text">Текст обращения</label>
+        <textarea class="textarea" id="req-text" style="min-height:185px">Здравствуйте! Сижу в читальном зале главного корпуса, Wi-Fi MISIS-EDU постоянно отваливается: каждые пять минут пропадает соединение, страницы не грузятся. Переподключался и с ноутбука, и с телефона — не помогает. Соседям за столом тоже не работает. Помогите, скоро дедлайн по курсовой в LMS!</textarea>
+        <p class="hint">Можно писать как угодно: агент сам выделит сервис, приоритет и маршрут решения.</p>
+
+        <button type="button" class="btn btn-primary" style="width:100%;margin-top:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          Разобрать
+        </button>
+
+        <div class="field-label" style="margin-top:22px">Примеры для демо</div>
+        <div class="chips">
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            Сайт недоступен
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+            LMS не грузится
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 13a10 10 0 0 1 5.24-2.76"/><line x1="12" x2="12.01" y1="20" y2="20"/></svg>
+            Wi-Fi отваливается
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            Неполное письмо
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+            Несколько вопросов сразу
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Расшифровка звонка
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            Заказ справки
+          </button>
+          <button type="button" class="chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+            Мат / английский
+          </button>
+        </div>
+      </div>
+
+      <!-- Правая колонка: результат разбора -->
+      <div class="card anim" style="--i:2">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          Результат разбора
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="route-badge">
+            <span class="route-ic r-auto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+            </span>
+            Авто-проверка
+          </span>
+          <span class="badge b-crit"><span class="dot"></span>Критично</span>
+          <span class="tag-mono">SUP-2026-0012</span>
+          <span class="badge b-info" style="margin-left:auto"><span class="dot"></span>Ждёт ответа пользователя</span>
+        </div>
+
+        <div class="plate plate-crit" style="margin-top:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" x2="22" y1="2" y2="22"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 4.17-2.65"/><path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"/><path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"/><path d="M5 13a10 10 0 0 1 5.24-2.76"/><line x1="12" x2="12.01" y1="20" y2="20"/></svg>
+          <div>
+            <b>Сбой известен, работы ведутся</b>
+            <small>Сеть MISIS-EDU · инцидент №2 · обнаружен 14:31 · затронуты ещё 3 обращения, NOC уже в курсе</small>
+          </div>
+        </div>
+
+        <div class="field-label" style="margin-top:20px">Обоснование маршрута</div>
+        <p style="font-size:13.5px;color:var(--ink-2);line-height:1.6">
+          Агент выделил ключевые сигналы «Wi-Fi», «MISIS-EDU», «отваливается» и сверил обращение с активными инцидентами. Совпадение с инцидентом №2 подтверждено: жалоба массовая, похожие обращения уже поступали от трёх пользователей. Приоритет — критичный, потому что доступ к учебным ресурсам пропал у нескольких человек одновременно. Создан тикет SUP-2026-0012, обращение закреплено за авто-проверкой с мониторингом сети; эскалация к оператору не потребуется, пока инцидент активен.
+        </p>
+
+        <div class="field-label" style="margin-top:20px">Подзадачи</div>
+        <ul class="subtasks">
+          <li>
+            <span class="st-n">1</span>
+            <span style="flex:1">Уточнить у пользователя аудиторию и этаж — проверить точку доступа в этой зоне</span>
+            <span class="badge b-info"><span class="dot"></span>В диалоге</span>
+          </li>
+          <li>
+            <span class="st-n">2</span>
+            <span style="flex:1">После восстановления сети уведомить пользователя и закрыть обращение</span>
+            <span class="badge b-med"><span class="dot"></span>Ждёт инцидент</span>
+          </li>
+        </ul>
+
+        <div class="field-label" style="margin-top:20px">Диалог уточнений</div>
+        <div class="dialog">
+          <div class="msg msg-agent">
+            <div class="msg-ava">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+            </div>
+            <div class="msg-bubble">
+              Здравствуйте! Я разобрал ваше обращение: сейчас действительно идёт массовый сбой сети MISIS-EDU (инцидент №2), специалисты уже работают над устранением. Уточните, пожалуйста, в какой аудитории и на каком этаже вы находитесь — проверю точку доступа в вашей зоне.
+            </div>
+          </div>
+        </div>
+        <div class="dialog-input">
+          <input class="input" type="text" placeholder="Ваш ответ…">
+          <button type="button" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            Отправить
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>

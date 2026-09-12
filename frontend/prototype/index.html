@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Помощник поддержки МИСИС — ИИ-агент техподдержки НИТУ МИСИС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <style>
+    /* ===== Лендинг-специфика (токены — из design-system.css) ===== */
+    html{scroll-behavior:smooth}
+    .sec{padding:64px 0}
+
+    /* --- Hero --- */
+    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;padding:62px 0 70px}
+    .hero-title{font-size:clamp(34px,5vw,56px);line-height:1.07;letter-spacing:-.025em;font-weight:700;margin:20px 0 18px}
+    .hero-title .accent{color:var(--brand)}
+    .hero-sub{font-size:clamp(15px,1.5vw,17.5px);color:var(--ink-2);max-width:530px;line-height:1.6}
+    .hero-cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+    .hero-stats{display:flex;margin-top:40px;border-top:1px solid var(--line);padding-top:22px}
+    .hero-stat{flex:1;min-width:110px}
+    .hero-stat + .hero-stat{margin-left:26px;padding-left:26px;border-left:1px solid var(--line)}
+    .stat-n{display:block;font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+    .stat-l{display:block;font-size:12.5px;color:var(--ink-2);margin-top:3px}
+
+    /* --- Визуальная композиция hero --- */
+    .hero-visual{position:relative;min-height:540px}
+    .hv-spot{position:absolute;top:0;right:0;width:440px;height:440px;border-radius:50%;background:rgba(183,231,160,.55);filter:blur(78px);z-index:0}
+    .hv-ring{position:absolute;inset:9% 3% 13% 13%;border:1.5px dashed rgba(10,30,100,.18);border-radius:36px;z-index:0}
+    .hv-card{position:absolute;z-index:1;border-radius:var(--r-card);transition:transform .35s var(--ease)}
+    .hv-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .hv-ticket{top:3%;left:0;width:312px;transform:rotate(-2.5deg);padding:16px 17px}
+    .hv-ticket:hover{transform:rotate(-2.5deg) translateY(-4px)}
+    .hv-ticket p{font-size:13.5px;line-height:1.55;margin-top:2px}
+    .hv-lamps{top:15%;right:0;width:242px;transform:rotate(2deg);padding:14px;display:grid;gap:8px}
+    .hv-lamps .lamp{padding:9px 11px}
+    .hv-lamps .lamp b{font-size:12px}
+    .hv-lamps .lamp small{font-size:10.5px}
+    .hv-lamps:hover{transform:rotate(2deg) translateY(-4px)}
+    .hv-chat{bottom:1%;left:11%;width:332px;transform:rotate(-1.2deg);padding:15px 16px}
+    .hv-chat:hover{transform:rotate(-1.2deg) translateY(-4px)}
+    .hv-chat .msg{max-width:100%;animation:none}
+
+    /* --- Заголовки секций (стиль .card-title, крупнее) --- */
+    .sec-head{max-width:620px;margin-bottom:38px;display:grid;gap:10px}
+    .sec-title{font-size:clamp(19px,2.3vw,25px);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink);display:flex;align-items:center;gap:11px}
+    .sec-title svg{width:20px;height:20px;color:var(--brand);flex-shrink:0}
+    .sec-sub{font-size:15px;color:var(--ink-2);line-height:1.6}
+
+    /* --- Как это работает --- */
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .step{background:#fff;border:1px solid var(--line);border-radius:var(--r-card);padding:22px;display:grid;gap:12px;align-content:start}
+    .step-n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--brand);background:var(--brand-soft);border-radius:6px;padding:3px 8px;justify-self:start}
+    .step-ic{width:38px;height:38px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center}
+    .step-ic svg{width:18px;height:18px}
+    .step b{font-size:15.5px;font-weight:600;line-height:1.35}
+    .step p{font-size:13px;color:var(--ink-2);line-height:1.55}
+
+    /* --- Что умеет --- */
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+    /* --- CTA --- */
+    .cta{background:linear-gradient(115deg,var(--brand) 0%,#2E63FF 58%,#0A1E64 135%);border-radius:var(--r-section);padding:58px 32px;color:#fff;position:relative;overflow:hidden}
+    .cta::before{content:"";position:absolute;width:360px;height:360px;border-radius:50%;background:rgba(183,231,160,.35);filter:blur(80px);right:-70px;top:-100px}
+    .cta::after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.14);filter:blur(70px);left:-60px;bottom:-120px}
+    .cta-in{position:relative;z-index:1;display:grid;gap:16px;justify-items:center;text-align:center}
+    .cta-title{font-size:clamp(26px,3.6vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.12}
+    .cta-sub{font-size:15px;color:rgba(255,255,255,.85);max-width:540px;line-height:1.6}
+    .cta-btns{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+    .btn-light{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(10,30,100,.25)}
+    .btn-glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    @media (hover:hover) and (pointer:fine){
+      .btn-light:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(10,30,100,.3)}
+      .btn-glass:hover{background:rgba(255,255,255,.24)}
+    }
+
+    /* --- Футер --- */
+    .footer{border-top:1px solid var(--line);background:rgba(255,255,255,.62)}
+    .foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.2fr;gap:26px;padding:46px 0 38px}
+    .foot-col b{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-2);margin-bottom:12px}
+    .foot-col a{display:block;font-size:13.5px;color:var(--ink-2);padding:4px 0;transition:color 150ms var(--ease)}
+    .foot-col a:hover{color:var(--brand)}
+    .foot-about p{font-size:13px;color:var(--ink-2);margin-top:14px;max-width:290px;line-height:1.6}
+    .foot-bottom{border-top:1px solid var(--line);padding:17px 0 24px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+    .foot-bottom .mono{font-size:11.5px}
+
+    /* --- Адаптив --- */
+    @media (max-width:1024px){
+      .hero{grid-template-columns:1fr;gap:46px;padding:46px 0 58px}
+      .hero-sub{max-width:600px}
+      .hero-visual{min-height:500px;max-width:600px;width:100%;margin:0 auto}
+      .steps{grid-template-columns:1fr 1fr}
+      .feat-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:680px){
+      .sec{padding:48px 0}
+      .feat-grid{grid-template-columns:1fr}
+      .hero-stats{flex-wrap:wrap;gap:18px}
+      .hero-stat + .hero-stat{margin-left:0;padding-left:0;border-left:none}
+      .hv-ticket{width:min(300px,90%)}
+      .hv-lamps{width:222px;top:20%}
+      .hv-chat{width:min(322px,94%);left:0}
+      .foot-grid{grid-template-columns:1fr 1fr}
+      .hdr-login span{display:none}
+      .hdr-login{padding:0 11px}
+    }
+    @media (max-width:520px){
+      .steps{grid-template-columns:1fr}
+      .hero-visual{min-height:530px}
+      .logo-text{display:none}
+      .cta{padding:46px 22px}
+      .foot-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-decor"></div>
+
+  <!-- 1. Шапка -->
+  <header class="header"><div class="header-in">
+    <a class="logo" href="index.html">
+      <div class="logo-mark">М</div>
+      <div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div>
+    </a>
+    <div class="header-right">
+      <a class="btn btn-ghost btn-sm hdr-login" href="login.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+        <span>Войти</span>
+      </a>
+      <a class="btn btn-primary btn-sm" href="app.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        Попробовать как гость
+      </a>
+    </div>
+  </div></header>
+
+  <!-- 2. Hero -->
+  <section class="wrap hero">
+    <div>
+      <span class="badge b-ai anim" style="--i:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+        ИИ-агент первой линии
+      </span>
+      <h1 class="hero-title anim" style="--i:1"><span class="accent">ИИ-помощник</span> техподдержки НИТУ МИСИС</h1>
+      <p class="hero-sub anim" style="--i:2">Разбирает обращения студентов и сотрудников за секунды: проверяет сайт, LMS и Wi-Fi, отвечает по базе знаний, заказывает справки и сам эскалирует оператору с готовым саммари.</p>
+      <div class="hero-cta anim" style="--i:3">
+        <a class="btn btn-primary btn-lg" href="app.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          Попробовать как гость
+        </a>
+        <a class="btn btn-outline btn-lg" href="login.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+          Войти по email МИСИС
+        </a>
+      </div>
+      <div class="hero-stats anim" style="--i:4">
+        <div class="hero-stat"><span class="stat-n">62,5%</span><span class="stat-l">обращений решает без оператора</span></div>
+        <div class="hero-stat"><span class="stat-n">4,8 сек</span><span class="stat-l">средняя реакция агента</span></div>
+        <div class="hero-stat"><span class="stat-n">16</span><span class="stat-l">обращений за текущую смену</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual anim" style="--i:2">
+      <div class="hv-spot"></div>
+      <div class="hv-ring"></div>
+
+      <div class="hv-card hv-ticket glass-panel">
+        <div class="hv-row" style="justify-content:space-between;margin-bottom:10px">
+          <span class="tag-mono">SUP-2026-0012</span>
+          <span class="badge b-crit"><span class="dot"></span>Критично</span>
+        </div>
+        <p>«Пропал Wi-Fi MISIS-EDU в главном корпусе, LMS не грузится. Зачёт через час — помогите!»</p>
+        <div class="hv-row" style="margin-top:13px">
+          <span class="route-badge"><span class="route-ic r-auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>Авто-проверка</span>
+          <span class="badge b-info" style="margin-left:auto">Ждёт ответа</span>
+        </div>
+      </div>
+
+      <div class="hv-card hv-lamps glass-panel">
+        <div class="card-title" style="margin-bottom:2px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Сервисы
+        </div>
+        <div class="lamp">
+          <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+          <div><b>Сайт МИСИС</b><small>200 OK · 183 мс</small></div>
+          <i class="dot dot-up"></i>
+        </div>
+        <div class="lamp">
+          <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg></span>
+          <div><b>LMS newlms</b><small>200 OK · 240 мс</small></div>
+          <i class="dot dot-up"></i>
+        </div>
+        <div class="lamp down">
+          <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></span>
+          <div><b>MISIS-EDU</b><small>сбой · с 14:32</small></div>
+          <i class="dot dot-down"></i>
+        </div>
+      </div>
+
+      <div class="hv-card hv-chat glass-panel">
+        <div class="card-title" style="margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+          Агент поддержки
+        </div>
+        <div class="dialog">
+          <div class="msg msg-agent">
+            <div class="msg-ava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+            <div class="msg-bubble">Вижу сбой Wi-Fi MISIS-EDU. Проверяю точки доступа главного корпуса и собираю саммари для оператора…</div>
+          </div>
+        </div>
+        <ul class="checks" style="margin-top:12px">
+          <li class="ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            misis.ru — 200 OK<small>183 мс</small>
+          </li>
+          <li class="ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            newlms — 200 OK<small>240 мс</small>
+          </li>
+          <li class="fail">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+            Wi-Fi MISIS-EDU — нет ответа<small>timeout</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Как это работает -->
+  <section class="wrap sec" id="how">
+    <div class="sec-head anim" style="--i:0">
+      <h2 class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Как это работает
+      </h2>
+      <p class="sec-sub">Четыре шага от обращения до готового решения — без очередей, телефонов и «ожидайте, оператор занят».</p>
+    </div>
+    <div class="steps">
+      <div class="step anim" style="--i:1">
+        <span class="step-n">01</span>
+        <div class="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div>
+        <b>Вставил обращение</b>
+        <p>Опишите проблему своими словами — сленг, эмоции или английский не помеха.</p>
+      </div>
+      <div class="step anim" style="--i:2">
+        <span class="step-n">02</span>
+        <div class="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+        <b>Агент разобрал и проверил</b>
+        <p>Выделил суть, категорию и приоритет, запустил автопроверки сервисов.</p>
+      </div>
+      <div class="step anim" style="--i:3">
+        <span class="step-n">03</span>
+        <div class="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg></div>
+        <b>Ответ, справка или эскалация</b>
+        <p>Решение из базы знаний, заказ справки или передача оператору с саммари.</p>
+      </div>
+      <div class="step anim" style="--i:4">
+        <span class="step-n">04</span>
+        <div class="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></div>
+        <b>Статус — в кабинете</b>
+        <p>Все обращения и заказы в личном кабинете, с цепочкой статусов до выдачи.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Что умеет -->
+  <section class="wrap sec" id="features">
+    <div class="sec-head anim" style="--i:0">
+      <h2 class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+        Что умеет агент
+      </h2>
+      <p class="sec-sub">Первая линия, которая не устаёт: закрывает типовые обращения и готовит всё для сложных.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="cert-card anim" style="--i:1">
+        <div class="cert-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></div>
+        <b>Понимает любые обращения</b>
+        <p>Разбирает сообщения с матом, сленгом и на любом языке — выделяет суть, эмоции и категорию проблемы.</p>
+      </div>
+      <div class="cert-card anim" style="--i:2">
+        <div class="cert-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <b>Автопроверки сервисов</b>
+        <p>Сам проверяет сайт МИСИС, LMS и Wi-Fi-сети: код ответа, время, доступность точек доступа.</p>
+      </div>
+      <div class="cert-card anim" style="--i:3">
+        <div class="cert-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></div>
+        <b>Заказывает справки</b>
+        <p>Справка с места учёбы, о выплатах, в военкомат — оформит заказ и проследит цепочку статусов до выдачи.</p>
+      </div>
+      <div class="cert-card anim" style="--i:4">
+        <div class="cert-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <b>Диалог-уточнение</b>
+        <p>Если данных не хватает, задаёт уточняющие вопросы и не закрывает обращение, пока всё не ясно.</p>
+      </div>
+      <div class="cert-card anim" style="--i:5">
+        <div class="cert-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg></div>
+        <b>Эскалация с саммари</b>
+        <p>Передаёт оператору обращение с готовым резюме, историей проверок и предложенным решением.</p>
+      </div>
+      <div class="cert-card anim" style="--i:6">
+        <div class="cert-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <b>Инцидент-детектор</b>
+        <p>Замечает массовые сбои, связывает похожие обращения в инцидент и сразу уведомляет команду.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Статусы сервисов -->
+  <section class="wrap sec" id="status">
+    <div class="sec-head anim" style="--i:0">
+      <h2 class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Статус сервисов
+      </h2>
+      <p class="sec-sub">Агент мониторит ключевые сервисы вуза круглосуточно и видит сбои раньше первых обращений.</p>
+    </div>
+    <div class="board anim" style="--i:1">
+      <div class="lamp">
+        <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+        <div><b>Сайт МИСИС</b><small>misis.ru · 200 OK</small></div>
+        <i class="dot dot-up"></i>
+      </div>
+      <div class="lamp">
+        <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg></span>
+        <div><b>LMS</b><small>newlms · 200 OK</small></div>
+        <i class="dot dot-up"></i>
+      </div>
+      <div class="lamp down">
+        <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></span>
+        <div><b>Wi-Fi MISIS-EDU</b><small>emulated · в сбое</small></div>
+        <i class="dot dot-down"></i>
+      </div>
+      <div class="lamp">
+        <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></span>
+        <div><b>Wi-Fi MISIS-CORP</b><small>emulated · ok</small></div>
+        <i class="dot dot-up"></i>
+      </div>
+      <div class="lamp">
+        <span class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></span>
+        <div><b>Wi-Fi MISIS-Guest</b><small>emulated · ok</small></div>
+        <i class="dot dot-up"></i>
+      </div>
+    </div>
+    <div class="plate plate-crit anim" style="--i:2;margin-top:14px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <div>
+        <b>Инцидент №2 — Wi-Fi MISIS-EDU</b>
+        <small>С 14:32 · затронуто 3 обращения · оператор Смирнова Ольга уведомлена</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. CTA -->
+  <section class="wrap sec">
+    <div class="cta anim" style="--i:0">
+      <div class="cta-in">
+        <h2 class="cta-title">Попробуйте на своём обращении</h2>
+        <p class="cta-sub">Гостевой режим — без регистрации. Напишите, что у вас сломалось, и посмотрите, как агент разбирает обращение в реальном времени.</p>
+        <div class="cta-btns">
+          <a class="btn btn-light btn-lg" href="app.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            Попробовать как гость
+          </a>
+          <a class="btn btn-glass btn-lg" href="login.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+            Войти по email МИСИС
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Футер -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-about">
+          <a class="logo" href="index.html">
+            <div class="logo-mark">М</div>
+            <div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div>
+          </a>
+          <p>ИИ-агент первой линии техподдержки: обращения, автопроверки, справки и эскалации — в одном окне.</p>
+        </div>
+        <div class="foot-col">
+          <b>Продукт</b>
+          <a href="#how">Как это работает</a>
+          <a href="#features">Что умеет</a>
+          <a href="#status">Статус сервисов</a>
+        </div>
+        <div class="foot-col">
+          <b>Прототип</b>
+          <a href="app.html">Приложение</a>
+          <a href="login.html">Вход</a>
+          <a href="cabinet.html">Кабинет</a>
+        </div>
+        <div class="foot-col">
+          <b>Админка</b>
+          <a href="admin-queue.html">Очередь оператора</a>
+          <a href="admin-ticket.html">Карточка эскалации</a>
+          <a href="admin-certs.html">Заказы справок</a>
+          <a href="admin-tools.html">Инструменты</a>
+          <a href="admin-metrics.html">Метрики</a>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>Прототип интерфейса · НИТУ МИСИС · 2026</span>
+        <span class="mono">данные демонстрационные · v0.3</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

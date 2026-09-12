@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка · Очередь обращений — Помощник поддержки МИСИС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <style>
+    /* Локальные дополнения страницы (дизайн-система не покрывает) */
+    .panel-pad{padding:20px;border-radius:var(--r-card)}
+    .btn-glass{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.6)}
+    @media (hover:hover) and (pointer:fine){
+      .btn-glass:hover{background:rgba(255,255,255,.26)}
+    }
+    .chan{display:inline-flex;align-items:center;gap:7px;color:var(--ink-2);white-space:nowrap}
+    .chan svg{width:15px;height:15px}
+    .tbl th svg{width:12px;height:12px;vertical-align:-1px}
+    .tbl td.t-time{white-space:nowrap}
+    a.tag-mono{color:var(--ink-2);transition:color 150ms var(--ease)}
+    a.tag-mono:hover{color:var(--brand)}
+    /* nav — разрешаем сжатие, иначе flex не даёт ему ужаться и body переполняется */
+    .nav{min-width:0}
+    /* Шапка: все 7 пунктов nav должны помещаться без прокрутки на 1440 */
+    @media (max-width:1500px){
+      .logo-text span{display:none}
+      .header-in{gap:10px}
+      .nav{gap:2px;margin-left:0}
+      .nav-label{margin:0 4px 0 8px}
+      .nav-btn{padding:8px 9px;font-size:13px}
+      .header-right .btn-ghost{font-size:0;gap:0;padding:0 10px}
+    }
+    /* Мобильная шапка: аватар без текста, чтобы logo + профиль + выход влезали в 342px */
+    @media (max-width:520px){
+      .chip-profile{padding:5px}
+      .chip-profile div{display:none}
+      .incident-banner .ib-actions{flex-wrap:wrap}
+      .incident-banner .ib-actions .btn{flex:1 1 140px}
+    }
+  </style>
+</head>
+<body>
+<div class="bg-decor"></div>
+
+<header class="header"><div class="header-in">
+  <a class="logo" href="app.html"><div class="logo-mark">М</div><div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div></a>
+  <nav class="nav">
+    <a class="nav-btn" href="app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Обращение</a>
+    <a class="nav-btn" href="cabinet.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Кабинет</a>
+    <span class="nav-label">Админка</span>
+    <a class="nav-btn active" href="admin-queue.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Очередь</a>
+    <a class="nav-btn" href="admin-ticket.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Эскалация</a>
+    <a class="nav-btn" href="admin-certs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>Заказы</a>
+    <a class="nav-btn" href="admin-tools.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Инструменты</a>
+    <a class="nav-btn" href="admin-metrics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>Метрики</a>
+  </nav>
+  <div class="header-right">
+    <div class="chip-profile"><span class="chip-ava">ИИ</span><div><b>Иванов Иван</b><span>ИТ-24</span></div></div>
+    <a class="btn btn-ghost btn-sm" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Выйти</a>
+  </div>
+</div></header>
+
+<main class="wrap" style="padding:28px 0 80px">
+  <div class="section">
+
+    <div class="incident-banner anim" style="--i:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <div>
+        <b>Активный инцидент: Wi-Fi MISIS-EDU недоступна с 14:32</b>
+        <small>Затронуто обращений: 3 · детектор сработал по волне жалоб</small>
+      </div>
+      <div class="ib-actions">
+        <button class="btn btn-white btn-sm" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Уведомить затронутых</button>
+        <button class="btn btn-glass btn-sm" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>Инцидент решён</button>
+      </div>
+    </div>
+
+    <div class="glass-panel panel-pad anim" style="--i:1">
+      <div class="board">
+        <div class="lamp">
+          <div class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <div><b>Сайт МИСИС</b><small>200 OK · 183 мс</small></div>
+          <span class="dot dot-up"></span>
+        </div>
+        <div class="lamp">
+          <div class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg></div>
+          <div><b>LMS</b><small>200 OK · 240 мс</small></div>
+          <span class="dot dot-up"></span>
+        </div>
+        <div class="lamp down">
+          <div class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/></svg></div>
+          <div><b>MISIS-EDU</b><small>сбой · с 14:32</small></div>
+          <span class="dot dot-down"></span>
+        </div>
+        <div class="lamp">
+          <div class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/></svg></div>
+          <div><b>MISIS-CORP</b><small>работает</small></div>
+          <span class="dot dot-up"></span>
+        </div>
+        <div class="lamp">
+          <div class="lamp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/></svg></div>
+          <div><b>MISIS-Guest</b><small>работает</small></div>
+          <span class="dot dot-up"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-head anim" style="--i:2">
+      <div>
+        <h2>Очередь обращений</h2>
+        <div class="sub">16 обращений за сегодня · 3 в эскалации · сортировка: критичные сверху</div>
+      </div>
+      <span class="updated"><i></i>Обновлено только что</span>
+    </div>
+
+    <div class="tbl-wrap anim" style="--i:3">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Приоритет <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></th>
+            <th>Маршрут</th>
+            <th>Обращение</th>
+            <th>Канал</th>
+            <th>Статус</th>
+            <th>Время</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge b-crit"><span class="dot"></span>Критично</span></td>
+            <td><span class="route-badge"><span class="route-ic r-op"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Оператор</span></td>
+            <td class="t-summary"><b><a class="tag-mono" href="admin-ticket.html">SUP-2026-0012</a> Wi-Fi MISIS-EDU: не подключается после смены пароля</b><small>Иванов Иван · ИТ-24 · назначено Смирновой Ольге</small></td>
+            <td><span class="chan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>Telegram</span></td>
+            <td><span class="badge b-crit"><span class="dot"></span>Ждёт ответа</span></td>
+            <td class="mono t-time">14:38</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-crit"><span class="dot"></span>Критично</span></td>
+            <td><span class="route-badge"><span class="route-ic r-auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg></span>Авто-проверка</span></td>
+            <td class="t-summary"><b><a class="tag-mono" href="admin-ticket.html">SUP-2026-0013</a> MISIS-EDU пропадает каждые 5–10 минут, пинг теряется</b><small>Петрова Анна · БМ-22 · связано с инцидентом №2</small></td>
+            <td><span class="chan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Web</span></td>
+            <td><span class="badge b-info"><span class="dot"></span>В работе</span></td>
+            <td class="mono t-time">14:41</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-high"><span class="dot"></span>Высокий</span></td>
+            <td><span class="route-badge"><span class="route-ic r-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>База знаний</span></td>
+            <td class="t-summary"><b><a class="tag-mono" href="admin-ticket.html">SUP-2026-0014</a> Нет интернета в общежитии №4, сеть MISIS-EDU не видна</b><small>Сидоров Дмитрий · ИТ-23 · связано с инцидентом №2</small></td>
+            <td><span class="chan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>Telegram</span></td>
+            <td><span class="badge b-info"><span class="dot"></span>В работе</span></td>
+            <td class="mono t-time">14:52</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-high"><span class="dot"></span>Высокий</span></td>
+            <td><span class="route-badge"><span class="route-ic r-op"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Оператор</span></td>
+            <td class="t-summary"><b><a class="tag-mono" href="admin-ticket.html">SUP-2026-0007</a> Не могу войти в личный кабинет LMS, ошибка 401</b><small>Козлова Мария · МХ-21 · передано оператору</small></td>
+            <td><span class="chan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Web</span></td>
+            <td><span class="badge b-high"><span class="dot"></span>Эскалация</span></td>
+            <td class="mono t-time">13:15</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-med"><span class="dot"></span>Средний</span></td>
+            <td><span class="route-badge"><span class="route-ic r-cert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg></span>Заказ справки</span></td>
+            <td class="t-summary"><b><a class="tag-mono" href="admin-ticket.html">SUP-2026-0003</a> Заказ справки с места учёбы: нужна к пятнице для стажировки</b><small>Волков Артём · ИТ-24 · заявка передана в деканат</small></td>
+            <td><span class="chan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Web</span></td>
+            <td><span class="badge b-ok"><span class="dot"></span>Готова и ждёт выдачи</span></td>
+            <td class="mono t-time">11:47</td>
+          </tr>
+          <tr>
+            <td><span class="badge b-low"><span class="dot"></span>Низкий</span></td>
+            <td><span class="route-badge"><span class="route-ic r-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>База знаний</span></td>
+            <td class="t-summary"><b><a class="tag-mono" href="admin-ticket.html">SUP-2026-0001</a> Как продлить доступ к электронной библиотеке на лето?</b><small>Зайцева Елена · БМ-20 · ответ найден в базе знаний</small></td>
+            <td><span class="chan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>Telegram</span></td>
+            <td><span class="badge b-ok"><span class="dot"></span>Решено</span></td>
+            <td class="mono t-time">09:26</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

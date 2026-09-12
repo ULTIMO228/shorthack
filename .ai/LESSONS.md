@@ -29,4 +29,6 @@
 ❌ Проверка `elif spec.get("required"):` только при отсутствии ключа (`if key in raw_params: val = raw_params[key]`). Если клиент передаёт `{"param": null}`, ключ есть, но значение `None` пропускает блок `if val is not None:` и не попадает в `resolved`, приводя к `KeyError` (HTTP 500) вместо HTTP 422.
 ✅ Проверять `if val is None and spec.get("required"): raise HTTPException(422)`. Если поле не required, но имеет `default` — подставлять `val = spec["default"]`.
 
-
+## L007 | Несогласованный контракт DTO и проверки клиента (TgLinkStateResponse.ok)
+❌ Бот проверял `if not link_info.get("ok"): return False`, а схема `TgLinkStateResponse` в ядре содержала только `chat_id`, `user_id`, `state` (без поля `ok`). В результате после успешной привязки аккаунта бот считал пользователя непривязанным и перенаправлял все обращения на ввод почты.
+✅ Согласовывать Pydantic-схемы ядра с ожиданиями клиентов (`ok: bool = True`), а в клиентском коде делать защитные проверки (`link_info.get("ok") is False` вместо `not get("ok")`) с опорой на семантические поля (`user_id`, `state != awaiting_*`).

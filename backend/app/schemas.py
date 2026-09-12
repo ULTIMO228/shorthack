@@ -46,6 +46,7 @@ class ClassifierResult(BaseModel):
 
 class LoginRequest(BaseModel):
     email: str  # домен @misis.ru / @edu.misis.ru проверяется в роутере
+    password: str = Field(min_length=1)
 
 
 class UserOut(BaseModel):
@@ -415,9 +416,12 @@ class TgLinkConfirmResponse(BaseModel):
 
 
 class TgLinkStateResponse(BaseModel):
+    ok: bool = True
     chat_id: int
     user_id: int | None = None
     state: str
+    user: UserOut | None = None
+    email: str | None = None
 
 
 class ErrorDetail(BaseModel):

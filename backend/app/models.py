@@ -31,6 +31,7 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     group_name: Mapped[str | None] = mapped_column(String, nullable=True)
     role: Mapped[str] = mapped_column(String, nullable=False)  # student / staff / operator
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)  # pbkdf2$iter$salt$hash
 
     requests: Mapped[list["Request"]] = relationship(back_populates="user")
     cert_orders: Mapped[list["CertOrder"]] = relationship(back_populates="user")

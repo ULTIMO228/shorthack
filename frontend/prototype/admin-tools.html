@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Инструменты — Помощник поддержки МИСИС</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/design-system.css">
+<style>
+  .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  .tools-col{display:grid;gap:16px;align-content:start}
+  .tool-btns{display:flex;gap:10px;flex-wrap:wrap}
+  .tool-btns .btn{flex:1}
+  .wifi-panel{padding:20px;border-radius:var(--r-card)}
+  .wifi-panel .panel-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .wifi-panel .panel-head svg{width:15px;height:15px;color:var(--brand)}
+  /* Шапка: 7 пунктов навигации не влезают в контентную ширину 1280px — компактный режим */
+  @media (max-width:1500px){
+    .header-in{gap:10px}
+    .nav{gap:2px}
+    .nav-label{display:none}
+    .nav-btn{padding:8px 10px;gap:6px}
+  }
+  @media (max-width:900px){.tools-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg-decor"></div>
+
+<header class="header"><div class="header-in">
+  <a class="logo" href="app.html"><div class="logo-mark">М</div><div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div></a>
+  <nav class="nav">
+    <a class="nav-btn" href="app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Обращение</a>
+    <a class="nav-btn" href="cabinet.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Кабинет</a>
+    <span class="nav-label">Админка</span>
+    <a class="nav-btn" href="admin-queue.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Очередь</a>
+    <a class="nav-btn" href="admin-ticket.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Эскалация</a>
+    <a class="nav-btn" href="admin-certs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Заказы</a>
+    <a class="nav-btn active" href="admin-tools.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Инструменты</a>
+    <a class="nav-btn" href="admin-metrics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Метрики</a>
+  </nav>
+  <div class="header-right">
+    <div class="chip-profile"><span class="chip-ava">ИИ</span><div><b>Иванов Иван</b><span>ИТ-24</span></div></div>
+    <a class="btn btn-ghost btn-sm" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Выйти</a>
+  </div>
+</div></header>
+
+<main class="wrap" style="padding:28px 0 80px">
+
+  <div class="page-head anim" style="--i:0">
+    <div>
+      <h2>Инструменты и симуляция</h2>
+      <div class="sub">Тест-панель администратора: проверки сервисов, эмуляция канала связи и ручные триггеры инцидентов</div>
+    </div>
+    <span class="updated"><i></i>эмулятор активен · обновлено 14:32</span>
+  </div>
+
+  <div class="tools-grid">
+
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="tools-col">
+
+      <section class="card anim" style="--i:1">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Проверки сервисов
+        </div>
+        <div class="tool-btns" style="margin-bottom:14px">
+          <button class="btn btn-outline" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Проверить сайт</button>
+          <button class="btn btn-outline" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Проверить LMS</button>
+          <button class="btn btn-outline" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>Проверить Wi-Fi</button>
+        </div>
+        <div class="term">
+          <div class="t-line t-dim">// вывод проверок: сайт и LMS — реальные HTTP-запросы, Wi-Fi — эмулятор состояния</div>
+          <div class="t-line"><span class="t-cmd">$ check_wifi MISIS-EDU</span></div>
+          <div class="t-line t-err">{ok:false, reason:"emulated_state: down"}</div>
+          <div class="t-line"><span class="t-cmd">$ check_lms newlms</span></div>
+          <div class="t-line t-ok">{ok:true, http_code:200, latency_ms:240}</div>
+          <div class="t-line"><span class="t-cmd">$ check_site https://misis.ru</span></div>
+          <div class="t-line t-ok">{ok:true, http_code:200, latency_ms:183}</div>
+          <div class="t-line"><span class="t-cursor"></span></div>
+        </div>
+      </section>
+
+      <section class="card anim" style="--i:2">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>
+          Симуляция канала
+        </div>
+        <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:14px">Генерация тестового трафика в канал поддержки — обращения попадут в очередь как реальные и пройдут полный маршрут авто-проверки.</p>
+        <div class="tool-btns">
+          <button class="btn btn-outline" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="7" x2="12" y2="11"/><line x1="10" y1="9" x2="14" y2="9"/></svg>Новое обращение</button>
+          <button class="btn btn-outline" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Эскалация вне базы</button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="tools-col">
+
+      <section class="glass-panel wifi-panel anim" style="--i:2">
+        <div class="panel-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+          <div class="card-title" style="margin-bottom:0">Wi-Fi сети: норма / сбой</div>
+        </div>
+        <div class="sw-row down">
+          <div>
+            <b class="mono">MISIS-EDU</b>
+            <small>учебная · 802.1X</small>
+          </div>
+          <span class="sw-state">сбой</span>
+          <label class="sw"><input type="checkbox" checked><i></i></label>
+        </div>
+        <div class="sw-row">
+          <div>
+            <b class="mono">MISIS-CORP</b>
+            <small>корпоративная</small>
+          </div>
+          <span class="sw-state">норма</span>
+          <label class="sw"><input type="checkbox"><i></i></label>
+        </div>
+        <div class="sw-row">
+          <div>
+            <b class="mono">MISIS-Guest</b>
+            <small>гостевая</small>
+          </div>
+          <span class="sw-state">норма</span>
+          <label class="sw"><input type="checkbox"><i></i></label>
+        </div>
+      </section>
+
+      <section class="card anim" style="--i:3">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Детектор инцидентов
+        </div>
+        <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:14px">Имитация волны обращений по выбранной сети: детектор должен заметить рост и открыть инцидент автоматически.</p>
+        <label class="field-label" for="detector-net">Сеть для симуляции</label>
+        <select class="input" id="detector-net" style="margin-bottom:14px">
+          <option value="misis-edu" selected>MISIS-EDU — учебная, 802.1X</option>
+          <option value="misis-corp">MISIS-CORP — корпоративная</option>
+          <option value="misis-guest">MISIS-Guest — гостевая</option>
+        </select>
+        <button class="btn btn-primary" type="button" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Волна жалоб ×3</button>
+        <div class="plate plate-crit" style="margin-top:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <b>Инцидент №2 активен</b>
+            <small>Wi-Fi MISIS-EDU с 14:32 · затронуто 3 обращения (SUP-2026-0012 и др.)</small>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+</main>
+
+</body>
+</html>

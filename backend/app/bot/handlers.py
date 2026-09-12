@@ -117,10 +117,12 @@ def get_effective_state(chat_id: int, link_info: dict[str, Any]) -> str:
 
 def is_user_linked(link_info: dict[str, Any]) -> bool:
     """Проверка, привязан ли аккаунт пользователя."""
-    if not link_info.get("ok"):
+    if link_info.get("ok") is False:
         return False
     state = link_info.get("state", "awaiting_email")
-    return state not in ("awaiting_email", "awaiting_confirm")
+    if state in ("awaiting_email", "awaiting_confirm"):
+        return False
+    return bool(link_info.get("user_id") or state not in ("awaiting_email", "awaiting_confirm"))
 
 
 def handle_command(

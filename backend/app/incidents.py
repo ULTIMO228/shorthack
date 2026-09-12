@@ -24,6 +24,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session as OrmSession
 
 from app import tickets, triggers
+from app.auth import hash_password
 from app.events import log_event
 from app.models import (
     Incident,
@@ -472,7 +473,12 @@ def simulate_wave(
         email = f"wave-user-{i+1}@edu.misis.ru"
         user = db.scalars(select(User).where(User.email == email)).first()
         if not user:
-            user = User(email=email, full_name=f"Студент {i+1}", role="student")
+            user = User(
+                email=email,
+                full_name=f"Студент {i+1}",
+                role="student",
+                password_hash=hash_password(secrets.token_urlsafe(16)),
+            )
             db.add(user)
             db.flush()
 

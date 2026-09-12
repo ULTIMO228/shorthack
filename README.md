@@ -11,7 +11,7 @@
 - **AI / Оркестрация:** LangGraph (StateGraph), Yandex AI Studio (YandexGPT + Yandex Embeddings, 256-dim)
 - **Knowledge Graph (опционально):** Neo4j 5.26 + Graphiti Core
 - **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Lucide Icons, чистый CSS (дизайн-токены МИСИС)
-- **Тестирование:** pytest (264 теста), httpx (TestClient)
+- **Тестирование:** pytest (367 тестов), httpx (TestClient)
 
 ---
 
@@ -64,6 +64,16 @@ uvicorn app.main:app --reload --port 8000
 
 > **Примечание**: при первом запуске автоматически создаются таблицы SQLite (`shorthack.db`) и выполняется идемпотентный сид: 5 пользователей (студенты, операторы, преподаватель), сервисы МИСИС и начальная база знаний.
 
+**Тестовые учётки** (вход по корпоративной почте и паролю на http://localhost:3000/login):
+
+| Почта | Пароль | Роль |
+|---|---|---|
+| `ivanov@misis.ru` | `student123` | студент |
+| `petrova@edu.misis.ru` | `student123` | студент |
+| `sidorov@edu.misis.ru` | `student123` | студент |
+| `kozlova@misis.ru` | `staff123` | сотрудник |
+| `smirnov@misis.ru` | `operator123` | оператор (админка) |
+
 ### 2. Фронтенд (Веб-интерфейс)
 
 ```bash
@@ -105,7 +115,7 @@ npm run dev
 
 ## Тестирование
 
-Запуск полного тестового набора ядра (264 теста):
+Запуск полного тестового набора ядра (367 тестов):
 
 ```bash
 cd backend

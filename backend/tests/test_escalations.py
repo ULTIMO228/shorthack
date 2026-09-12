@@ -21,6 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from app import agent, llm, tickets, tools
+from app.auth import hash_password
 from app.models import Event, OutboundMessage, Request, Service, ServiceCheck, Subtask, Ticket, User
 from app.agent import SplitResult, SubtaskDraft
 from app.schemas import ClassifierResult
@@ -41,7 +42,8 @@ def make_operator(db_engine, email="smirnov@misis.ru") -> User:
     db = maker()
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=email, full_name="Смирнов Олег", role="operator")
+        user = User(email=email, full_name="Смирнов Олег", role="operator",
+                    password_hash=hash_password("operator123"))
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -55,7 +57,8 @@ def make_student(db_engine, email="ivanov@misis.ru") -> User:
     db = maker()
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=email, full_name="Иванов Иван", role="student")
+        user = User(email=email, full_name="Иванов Иван", role="student",
+                    password_hash=hash_password("student123"))
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -160,7 +163,7 @@ def test_escalation_card_contains_fr060_package(app, db_engine, client, monkeypa
     db_session.commit()
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": op.email})
+    op_client.post("/api/auth/login", json={"email": op.email, "password": "operator123"})
 
     queue_resp = op_client.get("/api/admin/queue")
     assert queue_resp.status_code == 200
@@ -220,7 +223,7 @@ def test_quickstart_scenario_4b_escalation_flow(app, db_engine, client, monkeypa
     req_id = data["request_id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": op.email})
+    op_client.post("/api/auth/login", json={"email": op.email, "password": "operator123"})
     card_resp = op_client.get(f"/api/admin/escalations/{req_id}")
     assert card_resp.status_code == 200
     card = card_resp.json()
@@ -259,7 +262,7 @@ def test_escalation_card_includes_translation(app, db_engine, client, monkeypatc
     req_id = resp.json()["request_id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": op.email})
+    op_client.post("/api/auth/login", json={"email": op.email, "password": "operator123"})
     card = op_client.get(f"/api/admin/escalations/{req_id}").json()
     assert card["request"]["lang"] == "en"
     assert card["request"]["translation"] == "Кампусный Wi-Fi полностью не работает"
@@ -342,7 +345,7 @@ def test_escalation_package_fallback_when_llm_down(app, db_engine, client, monke
     req_id = data["request_id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": op.email})
+    op_client.post("/api/auth/login", json={"email": op.email, "password": "operator123"})
     card = op_client.get(f"/api/admin/escalations/{req_id}").json()
     assert "недоступна" in card["why_escalated"].lower() or "fr-013" in card["why_escalated"].lower()
     assert card["recommendation"] == agent.ESCALATION_FALLBACK_RECOMMENDATION
@@ -407,7 +410,7 @@ def test_close_escalation_and_double_close_409(app, db_engine, client, monkeypat
     req_id = resp.json()["request_id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": op.email})
+    op_client.post("/api/auth/login", json={"email": op.email, "password": "operator123"})
 
     # Пустая резолюция → 422
     err_resp = op_client.post(f"/api/admin/escalations/{req_id}/close", json={"resolution": "   "})
@@ -454,7 +457,7 @@ def test_admin_endpoints_require_operator(app, db_engine, client, monkeypatch):
     # 2. Студент (авторизован, роль student)
     make_student(db_engine, "student_user@misis.ru")
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "student_user@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "student_user@misis.ru", "password": "student123"})
     assert student_client.get("/api/admin/queue").status_code == 403
     assert student_client.get(f"/api/admin/escalations/{req_id}").status_code == 403
     assert student_client.post(f"/api/admin/escalations/{req_id}/close", json={"resolution": "ок"}).status_code == 403
@@ -462,7 +465,7 @@ def test_admin_endpoints_require_operator(app, db_engine, client, monkeypatch):
     # 3. Оператор
     make_operator(db_engine, "duty_op@misis.ru")
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "duty_op@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "duty_op@misis.ru", "password": "operator123"})
     assert op_client.get("/api/admin/queue").status_code == 200
     assert op_client.get(f"/api/admin/escalations/{req_id}").status_code == 200
 
@@ -544,7 +547,7 @@ def test_queue_guest_user_null_and_priority_aggregation(app, db_engine, client, 
     req_id = resp.json()["request_id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": op.email})
+    op_client.post("/api/auth/login", json={"email": op.email, "password": "operator123"})
 
     queue_resp = op_client.get("/api/admin/queue")
     assert queue_resp.status_code == 200

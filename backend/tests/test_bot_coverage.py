@@ -686,3 +686,36 @@ def test_status_command_msk_timezone():
     assert "12.09 13:00" in sent_text
     assert "SUP-999" in sent_text
 
+
+def test_is_user_linked_resilience():
+    from app.bot.handlers import is_user_linked, handle_message
+
+    # Без ключа 'ok', но state='idle' и user_id задан
+    link_info_no_ok = {"chat_id": 1380996180, "user_id": 1, "state": "idle"}
+    assert is_user_linked(link_info_no_ok) is True
+
+    # Состояние awaiting_email или awaiting_confirm -> False
+    assert is_user_linked({"chat_id": 1, "state": "awaiting_email"}) is False
+    assert is_user_linked({"chat_id": 1, "state": "awaiting_confirm"}) is False
+
+    # Явный ok: False -> False
+    assert is_user_linked({"ok": False, "state": "idle"}) is False
+
+    # Проверка вызова handle_message: текст не должен трактоваться как email
+    tg = MagicMock()
+    core = MagicMock()
+    core.get_tg_link.return_value = link_info_no_ok
+    core.create_request.return_value = {
+        "request_id": 10,
+        "ticket": {"number": "SUP-10"},
+        "reactions": [{"kind": "answer", "text": "Принято"}],
+    }
+
+    handle_message(
+        {"chat": {"id": 1380996180, "type": "private"}, "text": "в корпусе Б не ловит вайфай"},
+        tg,
+        core,
+    )
+    core.create_request.assert_called_once_with(1380996180, "в корпусе Б не ловит вайфай")
+
+

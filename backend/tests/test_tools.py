@@ -14,7 +14,9 @@ import httpx
 import pytest
 
 from app import agent, llm, tickets, tools, triggers
+from app.auth import hash_password
 from app.models import Event, Request, Service, ServiceCheck, User
+from sqlalchemy import select
 
 
 # ---------------------------------------------------------------------------
@@ -384,8 +386,10 @@ def _make_operator(db_engine, email: str = "smirnov@misis.ru") -> None:
 
     maker = sessionmaker(bind=db_engine, expire_on_commit=False)
     db = maker()
-    db.add(User(email=email, full_name="Смирнов Олег", role="operator"))
-    db.commit()
+    if db.scalar(select(User).where(User.email == email)) is None:  # smirnov уже засидирован
+        db.add(User(email=email, full_name="Смирнов Олег", role="operator",
+                    password_hash=hash_password("operator123")))
+        db.commit()
     db.close()
 
 
@@ -411,7 +415,7 @@ def _service_id(db_engine, name: str, check_type: str, state: str = "up") -> int
 def test_admin_patch_emulated_then_complaint_outage(client, monkeypatch, db_engine):
     """Сценарий 3: оператор переводит MISIS-EDU в down → жалоба → outage_notice."""
     _make_operator(db_engine)
-    login = client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    login = client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
     assert login.status_code == 200
 
     edu_id = _service_id(db_engine, "MISIS-EDU", "emulated")
@@ -450,7 +454,7 @@ def test_admin_patch_emulated_then_complaint_outage(client, monkeypatch, db_engi
 def test_admin_patch_real_service_conflict(client, db_engine):
     """FR-024: real-сервисы руками не переключаются → 409."""
     _make_operator(db_engine)
-    client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
     site_id = _service_id(db_engine, "misis.ru", "real")
     resp = client.patch(f"/api/admin/services/{site_id}", json={"state": "down"})
     assert resp.status_code == 409
@@ -466,7 +470,7 @@ def test_admin_patch_forbidden_for_non_operator(client, db_engine):
     anon = client.patch(f"/api/admin/services/{edu_id}", json={"state": "down"})
     assert anon.status_code == 401
 
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     forbidden = client.patch(f"/api/admin/services/{edu_id}", json={"state": "down"})
     assert forbidden.status_code == 403
 
@@ -477,6 +481,6 @@ def test_admin_patch_forbidden_for_non_operator(client, db_engine):
 
 def test_admin_patch_unknown_service_404(client, db_engine):
     _make_operator(db_engine)
-    client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
     resp = client.patch("/api/admin/services/9999", json={"state": "down"})
     assert resp.status_code == 404

@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session as OrmSession, sessionmaker
 
 from app import tools
+from app.auth import hash_password
 from app.models import Event, Service, ServiceCheck, User
 from tests.conftest import FakeHttpResponse
 
@@ -74,11 +75,12 @@ def test_status_board_returns_services_with_last_check(db_session, operator_clie
 
 def test_status_board_operator_only(client, db_session):
     """Студент -> 403."""
-    student = User(email="student@edu.misis.ru", full_name="Студент", role="student")
+    student = User(email="student@edu.misis.ru", full_name="Студент", role="student",
+                     password_hash=hash_password("student123"))
     db_session.add(student)
     db_session.commit()
 
-    login_resp = client.post("/api/auth/login", json={"email": "student@edu.misis.ru"})
+    login_resp = client.post("/api/auth/login", json={"email": "student@edu.misis.ru", "password": "student123"})
     assert login_resp.status_code == 200
 
     resp = client.get("/api/admin/status-board")
@@ -255,10 +257,11 @@ def test_invoke_simulate_wave_delegates_to_incidents(operator_client, client, db
     ).status_code == 401
 
     # 2. Студент 403
-    student = User(email="student2@edu.misis.ru", full_name="Студент", role="student")
+    student = User(email="student2@edu.misis.ru", full_name="Студент", role="student",
+                     password_hash=hash_password("student123"))
     db_session.add(student)
     db_session.commit()
-    client.post("/api/auth/login", json={"email": "student2@edu.misis.ru"})
+    client.post("/api/auth/login", json={"email": "student2@edu.misis.ru", "password": "student123"})
     assert client.post(
         "/api/admin/tools/simulate_wave/invoke",
         json={"params": {"service": "wifi_edu", "count": 3}},

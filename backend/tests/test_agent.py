@@ -226,15 +226,14 @@ def test_get_request_detail_access(client, monkeypatch, db_engine):
 
     from app.models import User
 
-    # оператор (логин автосоздаёт только student — роль проставляем напрямую)
+    # оператор smirnov@misis.ru уже создан autouse-фикстурой (роль operator)
     maker = sessionmaker(bind=db_engine, expire_on_commit=False)
-    setup_db = maker()
-    setup_db.add(User(email="smirnov@misis.ru", full_name="Смирнов Олег", role="operator"))
-    setup_db.commit()
-    setup_db.close()
+    with maker() as setup_db:
+        op = setup_db.query(User).filter_by(email="smirnov@misis.ru").one()
+        assert op.role == "operator"
 
     make_fake_llm(monkeypatch)
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     created = client.post("/api/requests", json={"text": "Не работает вайфай MISIS-Guest"})
     request_id = created.json()["request_id"]
     own = client.get(f"/api/requests/{request_id}")
@@ -243,12 +242,12 @@ def test_get_request_detail_access(client, monkeypatch, db_engine):
     assert len(dialog) == 1 and dialog[0]["role"] == "agent"  # уточняющий вопрос
 
     stranger = client.__class__(client.app)
-    stranger.post("/api/auth/login", json={"email": "petrova@edu.misis.ru"})
+    stranger.post("/api/auth/login", json={"email": "petrova@edu.misis.ru", "password": "student123"})
     forbidden = stranger.get(f"/api/requests/{request_id}")
     assert forbidden.status_code == 403
 
     operator = client.__class__(client.app)
-    operator.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    operator.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
     allowed = operator.get(f"/api/requests/{request_id}")
     assert allowed.status_code == 200
 

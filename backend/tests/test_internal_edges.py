@@ -61,7 +61,7 @@ def test_tg_link_confirm_without_code_request(client, bot_headers):
 
 def test_tg_link_confirm_wrong_code_then_reuse_limit(client, bot_headers):
     """1 неверная попытка — информативный отказ, повторная верная — успех (попытки < 3)."""
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     client.post(
         "/api/internal/tg/link",
         json={"chat_id": 888, "email": "ivanov@misis.ru"},

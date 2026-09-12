@@ -18,8 +18,8 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Заменить frontend/src/App.jsx (форма сокращателя) каркасом: state `session` (`{user}` или `{guest:true}` из `GET /api/auth/me`)/`view`/`selectedRequestId`, переключение представлений, меню по роли; кнопка «Войти по почте МИСИС» в шапке для гостя, «Профиль/Выйти» для авторизованного
-- [ ] T002 [P] Создать frontend/src/api.js: обёртка fetch (`credentials:"include"`, JSON, 401 → колбэк на login, ошибки → `error.detail`)
+- [X] T001 Заменить frontend/src/App.jsx (форма сокращателя) каркасом: state `session` (`{user}` или `{guest:true}` из `GET /api/auth/me`)/`view`/`selectedRequestId`, переключение представлений, меню по роли; кнопка «Войти по почте МИСИС» в шапке для гостя, «Профиль/Выйти» для авторизованного
+- [X] T002 [P] Создать frontend/src/api.js: обёртка fetch (`credentials:"include"`, JSON, 401 → колбэк на login, ошибки → `error.detail`)
 
 ---
 
@@ -27,10 +27,10 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 **⚠️ Блокирует все user story**
 
-- [ ] T003 [P] Создать frontend/src/components/Spinner.jsx: «Агент разбирает обращение…»
-- [ ] T004 [P] Создать frontend/src/components/PriorityBadge.jsx и RouteBadge.jsx: значки приоритета (critical/high/medium/low) и маршрута (⚙/📖/📄/👤)
-- [ ] T005 [P] Создать frontend/src/components/StatusBoard.jsx: лампочки сервисов из `GET /api/admin/status-board` (emulated down → красная независимо от last_check), polling 5 c, cleanup
-- [ ] T006 Базовые стили в frontend/src/App.css: badges, плашки (в т.ч. красная outage), таблицы, лампочки, карточки метрик — в тёмной теме scaffold
+- [X] T003 [P] Создать frontend/src/components/Spinner.jsx: «Агент разбирает обращение…»
+- [X] T004 [P] Создать frontend/src/components/PriorityBadge.jsx и RouteBadge.jsx: значки приоритета (critical/high/medium/low) и маршрута (⚙/📖/📄/👤)
+- [X] T005 [P] Создать frontend/src/components/StatusBoard.jsx: лампочки сервисов из `GET /api/admin/status-board` (emulated down → красная независимо от last_check), polling 5 c, cleanup
+- [X] T006 Базовые стили в frontend/src/App.css: дизайн-токены + badges, плашки (в т.ч. красная outage), таблицы, лампочки, карточки метрик — светлая фирменная тема по design-brief.md
 
 **Checkpoint**: каркас рендерится, компоненты доступны всем представлениям.
 
@@ -44,7 +44,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Создать frontend/src/views/LoginView.jsx: форма email → `POST /api/auth/login`; ошибка 400 (домен) под полем; успех → session в App (гостевая сессия привязывается к user_id — диалог сохраняется), переход на прежний view; вход ОПЦИОНАЛЕН: на LoginView попадают по кнопке из шапки или из плашек «требуется вход»; logout-кнопка в шапке App
+- [X] T007 [US1] Создать frontend/src/views/LoginView.jsx: форма email → `POST /api/auth/login`; ошибка 400 (домен) под полем; успех → session в App (гостевая сессия привязывается к user_id — диалог сохраняется), переход на прежний view; вход ОПЦИОНАЛЕН: на LoginView попадают по кнопке из шапки или из плашек «требуется вход»; logout-кнопка в шапке App
 
 **Checkpoint**: вход/выход/F5 работают против живого ядра.
 
@@ -58,9 +58,9 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Создать frontend/src/views/RequestView.jsx: textarea + `POST /api/requests`; 8 кнопок примеров (FR-014, захардкожены); Spinner на время запроса
-- [ ] T009 [US2] В RequestView.jsx — блок результата: подзадачи с PriorityBadge/RouteBadge + `route_reason`, номер тикета SUP-2026-*, статус
-- [ ] T010 [US2] В RequestView.jsx — диалог: лента сообщений, ввод при `ticket.status==="ждёт ответа пользователя"` → `POST /api/requests/{id}/reply`; `reaction.kind==="outage_notice"` → красная плашка; `cert_ordered` → карточка-ссылка в кабинет; `auth_required` → плашка «Требуется вход по почте МИСИС» с кнопкой входа (заказ не создан); 409 → блокировка ввода с текстом (зависит T008)
+- [X] T008 [US2] Создать frontend/src/views/RequestView.jsx: textarea + `POST /api/requests`; 8 кнопок примеров (FR-014, захардкожены); Spinner на время запроса
+- [X] T009 [US2] В RequestView.jsx — блок результата: подзадачи с PriorityBadge/RouteBadge + `route_reason`, номер тикета SUP-2026-*, статус
+- [X] T010 [US2] В RequestView.jsx — диалог: лента сообщений, ввод при `ticket.status==="ждёт ответа пользователя"` → `POST /api/requests/{id}/reply`; `reaction.kind==="outage_notice"` → красная плашка; `cert_ordered` → карточка-ссылка в кабинет; `auth_required` → плашка «Требуется вход по почте МИСИС» с кнопкой входа (заказ не создан); 409 → блокировка ввода с текстом (зависит T008)
 
 **Checkpoint**: полный цикл обращения в браузере.
 
@@ -74,8 +74,8 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 3
 
-- [ ] T011 [P] [US3] Создать frontend/src/views/CabinetView.jsx: гостю — заглушка «Кабинет доступен после входа по почте МИСИС» с кнопкой входа (запросы не выполняются); авторизованному — раздел «Мои обращения» (`GET /api/requests`, polling 5 c): номер, дата, статус, summary; клик → детали (диалог read-only)
-- [ ] T012 [US3] В CabinetView.jsx — раздел «Справки»: каталог (`GET /api/certs/catalog`) с кнопкой заказа (`POST /api/certs/orders`); «Мои заказы» (`GET /api/certs/orders`) с цепочкой-прогрессом 4 статусов (зависит T011)
+- [X] T011 [P] [US3] Создать frontend/src/views/CabinetView.jsx: гостю — заглушка «Кабинет доступен после входа по почте МИСИС» с кнопкой входа (запросы не выполняются); авторизованному — раздел «Мои обращения» (`GET /api/requests`, polling 5 c): номер, дата, статус, summary; клик → детали (диалог read-only)
+- [X] T012 [US3] В CabinetView.jsx — раздел «Справки»: каталог (`GET /api/certs/catalog`) с кнопкой заказа (`POST /api/certs/orders`); «Мои заказы» (`GET /api/certs/orders`) с цепочкой-прогрессом 4 статусов (зависит T011)
 
 **Checkpoint**: заказ из каталога появляется в списке; смена статуса оператором доезжает поллингом.
 
@@ -89,9 +89,9 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 4
 
-- [ ] T013 [US4] Создать frontend/src/views/AdminQueueView.jsx: таблица очереди (`GET /api/admin/queue`, polling 5 c) с badges; баннер при активном инциденте (`GET /api/admin/incidents`); встроенный StatusBoard; клик → `admin.ticket`
-- [ ] T014 [US4] Создать frontend/src/views/AdminTicketView.jsx: блоки саммари → проверки → рекомендация → почему эскалировано → исходник+перевод → журнал (свёрнут); читается ≤30 c
-- [ ] T015 [US4] В AdminTicketView.jsx — действия: форма закрытия (`resolution`, чекбокс «в базу знаний») → `POST .../close`; показ `kb_draft` с кнопкой «Подтвердить» (`POST /api/admin/kb/articles/{id}/confirm`); при активном инциденте — «Уведомить затронутых» (`POST .../broadcast`) и «Инцидент решён» (`POST .../resolve`) (зависит T014)
+- [X] T013 [US4] Создать frontend/src/views/AdminQueueView.jsx: таблица очереди (`GET /api/admin/queue`, polling 5 c) с badges; баннер при активном инциденте (`GET /api/admin/incidents`); встроенный StatusBoard; клик → `admin.ticket`
+- [X] T014 [US4] Создать frontend/src/views/AdminTicketView.jsx: блоки саммари → проверки → рекомендация → почему эскалировано → исходник+перевод → журнал (свёрнут); читается ≤30 c
+- [X] T015 [US4] В AdminTicketView.jsx — действия: форма закрытия (`resolution`, чекбокс «в базу знаний») → `POST .../close`; показ `kb_draft` с кнопкой «Подтвердить» (`POST /api/admin/kb/articles/{id}/confirm`); при активном инциденте — «Уведомить затронутых» (`POST .../broadcast`) и «Инцидент решён» (`POST .../resolve`) (зависит T014)
 
 **Checkpoint**: оператор ведёт эскалацию от очереди до закрытия без Postman.
 
@@ -105,7 +105,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 5
 
-- [ ] T016 [US5] Создать frontend/src/views/AdminCertsView.jsx: таблица (`GET /api/admin/certs/orders`): тип, заявитель, группа, время, статус; кнопка «Следующий статус» → `PATCH /api/admin/certs/orders/{id}`; 409 → тост с `detail`; polling 5 c
+- [X] T016 [US5] Создать frontend/src/views/AdminCertsView.jsx: таблица (`GET /api/admin/certs/orders`): тип, заявитель, группа, время, статус; кнопка «Следующий статус» → `PATCH /api/admin/certs/orders/{id}`; 409 → тост с `detail`; polling 5 c
 
 **Checkpoint**: цепочка «не обработана → … → забрана» проходится кнопками.
 
@@ -119,7 +119,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 6
 
-- [ ] T017 [US6] Создать frontend/src/views/AdminToolsView.jsx: `GET /api/admin/tools` → карточки инструментов с формой по `params[]` → `POST /api/admin/tools/{name}/invoke`, вывод JSON-результата; блок переключателей Wi-Fi (`PATCH /api/admin/services/{id}`) со StatusBoard; кнопка «Волна жалоб» = invoke `simulate_wave {service, count:3}`
+- [X] T017 [US6] Создать frontend/src/views/AdminToolsView.jsx: `GET /api/admin/tools` → карточки инструментов с формой по `params[]` → `POST /api/admin/tools/{name}/invoke`, вывод JSON-результата; блок переключателей Wi-Fi (`PATCH /api/admin/services/{id}`) со StatusBoard; кнопка «Волна жалоб» = invoke `simulate_wave {service, count:3}`
 
 **Checkpoint**: все демо-сценарии запускаются с панели в один клик.
 
@@ -133,7 +133,7 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ### Implementation for User Story 7
 
-- [ ] T018 [US7] Создать frontend/src/views/AdminMetricsView.jsx: `GET /api/admin/metrics` (polling 5 c): карточки % автоматизации, среднее время реакции, инциденты (active/total), счётчики обращений/эскалаций
+- [X] T018 [US7] Создать frontend/src/views/AdminMetricsView.jsx: `GET /api/admin/metrics` (polling 5 c): карточки % автоматизации, среднее время реакции, инциденты (active/total), счётчики обращений/эскалаций
 
 **Checkpoint**: цифры сходятся с журналом.
 
@@ -141,8 +141,10 @@ description: "Задачи реализации фичи 002 — веб-инте
 
 ## Phase 10: Polish & Cross-Cutting Concerns
 
-- [ ] T019 Проверка прав: пункты admin:* скрыты при `role!=="operator"`; прямой переход → 403 от ядра с русским текстом; состояния загрузки/пустоты всех списков
+- [X] T019 Проверка прав: пункты admin:* скрыты при `role!=="operator"`; прямой переход → 403 от ядра с русским текстом; состояния загрузки/пустоты всех списков
 - [ ] T020 `npm run build` без ошибок + полный прогон демо-скрипта из contracts/ui-map.md (6 шагов) + quickstart.md (7 сценариев)
+  - Частично: `next build` зелёный (2026-09-12); сценарии 1–2 (вход, обращение+диалог) проверены вживую против ядра через прокси :3000 (login ivanov@misis.ru → POST /api/requests → тикет SUP-2026-*, reply 200, список/детали — ок); сценарии 3–7 заблокированы незакрытыми задачами 001 (эндпоинты /api/admin/*, /api/certs/* — 404)
+- [X] T021 Проход улучшений фронта (2026-09-12): автоскролл ленты диалога к последнему сообщению (respect prefers-reduced-motion), пузырь «агент печатает» при reply, Ctrl/Cmd+Enter в главном композере + подсказка, скролл-зона .conversation (max-height+overflow), фикс невалидной вложенности Link>button (плашка cert_ordered, баннер инцидента), метки приоритета из PRIORITY_LABEL, «Загрузка диалога…»/ошибка при раскрытии в кабинете, Esc+role=dialog в модалке закрытия, время результата фиксируется при ответе ядра (а не при рендере), дедуп блока route_reason, fnRef-синк use-polling перенесён в useEffect
 
 ---
 

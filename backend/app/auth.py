@@ -1,12 +1,15 @@
-"""Авторизация (эмуляция): вход по корпоративной почте МИСИС, cookie-сессии, гостевой режим.
+"""Авторизация: вход по корпоративной почте МИСИС и паролю, cookie-сессии, гостевой режим.
 
-research.md R4: без паролей и внешнего IdP. Гостевая сессия (FR-016) создаётся
-автоматически при первом обращении без логина и привязывается к пользователю
-при входе — диалог гостя сохраняется.
+Пароль хранится в виде PBKDF2-HMAC-SHA256 (stdlib hashlib/secrets, без внешних
+зависимостей): формат "pbkdf2$<iterations>$<salt_hex>$<hash_hex>". Гостевая
+сессия (FR-016) создаётся автоматически при первом обращении без логина и
+привязывается к пользователю при входе — диалог гостя сохраняется.
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import secrets
 from typing import Annotated
 
@@ -19,6 +22,30 @@ from app.models import User
 
 COOKIE_NAME = "session_id"
 MISIS_DOMAINS = ("@misis.ru", "@edu.misis.ru")
+PBKDF2_ITERATIONS = 200_000
+
+
+def hash_password(password: str) -> str:
+    """PBKDF2-HMAC-SHA256 с случайной солью; результат — 'pbkdf2$<iter>$<salt>$<hash>' (hex)."""
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), bytes.fromhex(salt), PBKDF2_ITERATIONS
+    )
+    return f"pbkdf2${PBKDF2_ITERATIONS}${salt}${digest.hex()}"
+
+
+def verify_password(password: str, stored: str) -> bool:
+    """Проверка пароля против сохранённого хэша; битый формат — False (не исключение)."""
+    try:
+        scheme, iterations, salt_hex, hash_hex = stored.split("$")
+        if scheme != "pbkdf2":
+            return False
+        digest = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), bytes.fromhex(salt_hex), int(iterations)
+        )
+        return hmac.compare_digest(digest.hex(), hash_hex)
+    except (ValueError, TypeError, AttributeError):
+        return False
 
 
 def is_misis_email(email: str) -> bool:

@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from app import certs
+from app.auth import hash_password
 from app.models import CertOrder, Event, KbArticle, Request, Subtask, Ticket, User
 from app.schemas import CertCatalogItem
 from tests.test_agent import make_fake_llm
@@ -27,7 +28,8 @@ def make_operator(db_engine, email="smirnov@misis.ru") -> User:
     db = maker()
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=email, full_name="Смирнов Олег", role="operator")
+        user = User(email=email, full_name="Смирнов Олег", role="operator",
+                    password_hash=hash_password("operator123"))
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -86,7 +88,7 @@ def test_catalog_public_returns_five_types(client):
 
 def test_create_order_authorized(client, db_session):
     """Авторизованный пользователь заказывает справку -> статус 'не обработана'."""
-    login_res = client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    login_res = client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     assert login_res.status_code == 200
 
     order_res = client.post("/api/certs/orders", json={"cert_type": "study"})
@@ -116,7 +118,7 @@ def test_create_order_guest_401(client, db_session):
 
 def test_create_order_unknown_type_422(client):
     """Неизвестный тип справки отсекается валидацией Pydantic Literal (422)."""
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     res = client.post("/api/certs/orders", json={"cert_type": "diploma"})
     assert res.status_code == 422
 
@@ -126,8 +128,14 @@ def test_my_orders_returns_own_desc(app, db_engine):
     client1 = TestClient(app)
     client2 = TestClient(app)
 
-    client1.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
-    client2.post("/api/auth/login", json={"email": "petrov@misis.ru"})
+    maker = sessionmaker(bind=db_engine, expire_on_commit=False)
+    with maker() as db:
+        db.add(User(email="petrov@misis.ru", full_name="Петров Пётр", role="student",
+                    password_hash=hash_password("student123")))
+        db.commit()
+
+    client1.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
+    client2.post("/api/auth/login", json={"email": "petrov@misis.ru", "password": "student123"})
 
     # Иванов заказывает 2 справки
     res1 = client1.post("/api/certs/orders", json={"cert_type": "study"})
@@ -167,12 +175,12 @@ def test_admin_patch_full_forward_chain(app, db_engine):
     make_operator(db_engine, "smirnov@misis.ru")
 
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     create_res = student_client.post("/api/certs/orders", json={"cert_type": "study"})
     order_id = create_res.json()["order"]["id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     # 1. не обработана -> обрабатывается
     patch1 = op_client.patch(
@@ -207,12 +215,12 @@ def test_admin_patch_backward_409(app, db_engine):
     """Попытка перевести статус назад -> 409 с точным текстом ошибки."""
     make_operator(db_engine, "smirnov@misis.ru")
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     create_res = student_client.post("/api/certs/orders", json={"cert_type": "study"})
     order_id = create_res.json()["order"]["id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
     op_client.patch(f"/api/admin/certs/orders/{order_id}", json={"status": "обрабатывается"})
 
     # Назад в "не обработана" -> 409
@@ -228,12 +236,12 @@ def test_admin_patch_skip_409(app, db_engine):
     """Попытка перескочить статус (скачок) -> 409."""
     make_operator(db_engine, "smirnov@misis.ru")
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     create_res = student_client.post("/api/certs/orders", json={"cert_type": "study"})
     order_id = create_res.json()["order"]["id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     res = op_client.patch(f"/api/admin/certs/orders/{order_id}", json={"status": "забрана"})
     assert res.status_code == 409
@@ -244,12 +252,12 @@ def test_admin_patch_same_status_409(app, db_engine):
     """Попытка установить тот же самый статус -> 409."""
     make_operator(db_engine, "smirnov@misis.ru")
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     create_res = student_client.post("/api/certs/orders", json={"cert_type": "study"})
     order_id = create_res.json()["order"]["id"]
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     res = op_client.patch(f"/api/admin/certs/orders/{order_id}", json={"status": "не обработана"})
     assert res.status_code == 409
@@ -260,7 +268,7 @@ def test_admin_patch_not_found_404(app, db_engine):
     """Несуществующий order_id -> 404."""
     make_operator(db_engine, "smirnov@misis.ru")
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     res = op_client.patch("/api/admin/certs/orders/9999", json={"status": "обрабатывается"})
     assert res.status_code == 404
@@ -271,11 +279,11 @@ def test_admin_list_orders(app, db_engine):
     """Список заказов в админке содержит данные пользователя (full_name, email, group_name)."""
     make_operator(db_engine, "smirnov@misis.ru")
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     student_client.post("/api/certs/orders", json={"cert_type": "payments"})
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     res = op_client.get("/api/admin/certs/orders")
     assert res.status_code == 200, res.text
@@ -295,7 +303,7 @@ def test_admin_requires_operator(app, db_engine):
     assert guest_client.patch("/api/admin/certs/orders/1", json={"status": "обрабатывается"}).status_code == 401
 
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     assert student_client.get("/api/admin/certs/orders").status_code == 403
     assert student_client.patch("/api/admin/certs/orders/1", json={"status": "обрабатывается"}).status_code == 403
 
@@ -342,7 +350,7 @@ def test_cert_status_chain():
 def test_agent_cert_order_authorized_creates_order(client, monkeypatch, db_session, db_engine):
     """Авторизованный пользователь запрашивает справку текстом -> заказ оформляется агентом."""
     seed_regulation_doc(db_engine)
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
 
     make_fake_llm(
         monkeypatch,
@@ -428,7 +436,7 @@ def test_agent_cert_order_guest_auth_required(client, monkeypatch, db_session):
 
 def test_agent_cert_order_ambiguous_type_asks_clarification(client, monkeypatch, db_session):
     """Неопределённый тип справки -> уточняющий вопрос clarification со списком каталога."""
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
 
     make_fake_llm(
         monkeypatch,
@@ -466,7 +474,7 @@ def test_quickstart_scenario_5_order_status_visible(app, db_engine):
     make_operator(db_engine, "smirnov@misis.ru")
 
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
 
     # 1. Заказ справки
     create_res = student_client.post("/api/certs/orders", json={"cert_type": "study"})
@@ -476,7 +484,7 @@ def test_quickstart_scenario_5_order_status_visible(app, db_engine):
 
     # 2. Оператор берёт в работу
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
     patch_res = op_client.patch(
         f"/api/admin/certs/orders/{order_id}",
         json={"status": "обрабатывается"},

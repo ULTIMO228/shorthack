@@ -3,7 +3,11 @@
 Приложение импортируется из app.main (роутеры подключены там, T011); get_session
 переопределён на временную БД — реальная backend/shorthack.db тестами не трогается.
 Lifespan основного приложения (create_all + seed основной БД) в тестах не запускаем:
-таблицы создаёт фикстура db_engine, сидирование тестам не нужно.
+таблицы создаёт фикстура db_engine.
+
+Вход по паролю: автосоздания пользователей при логине нет, поэтому autouse-фикстура
+seed_users наполняет каждую тестовую БД 5 пользователями из seed.USERS с демо-паролями
+(student123 / staff123 / operator123). Хэши считаются один раз на сессию pytest.
 """
 
 import sys
@@ -19,6 +23,48 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db import Base, get_session  # noqa: E402
 from app.main import app as main_app  # noqa: E402
+
+# Демо-пароли тестовых учёток (совпадают с seed.PASSWORD_BY_ROLE)
+PASSWORD_STUDENT = "student123"
+PASSWORD_STAFF = "staff123"
+PASSWORD_OPERATOR = "operator123"
+
+# Хэши считаем один раз: pbkdf2 на каждый тест дорог
+_hash_cache: dict[str, str] = {}
+
+
+def _password_hash(role: str) -> str:
+    from app.auth import hash_password
+
+    if role not in _hash_cache:
+        _hash_cache[role] = hash_password(
+            {"student": PASSWORD_STUDENT, "staff": PASSWORD_STAFF, "operator": PASSWORD_OPERATOR}[role]
+        )
+    return _hash_cache[role]
+
+
+@pytest.fixture(autouse=True)
+def seed_users(db_engine):
+    """5 пользователей из seed.USERS — чтобы логин по паролю находил профиль."""
+    from sqlalchemy import select
+
+    from app.models import User
+    from app.seed import USERS
+
+    maker = sessionmaker(bind=db_engine, expire_on_commit=False)
+    with maker() as db:
+        if db.scalar(select(User).limit(1)) is None:
+            db.add_all(
+                User(
+                    email=email,
+                    full_name=full_name,
+                    group_name=group,
+                    role=role,
+                    password_hash=_password_hash(role),
+                )
+                for email, full_name, group, role in USERS
+            )
+            db.commit()
 
 
 @pytest.fixture()
@@ -67,19 +113,12 @@ def bot_token(monkeypatch):
 
 @pytest.fixture()
 def operator_client(app, db_engine):
-    """TestClient с сессией дежурного оператора (smirnov@misis.ru)."""
-    from app.models import User
-    from sqlalchemy import select
-
-    testing_session = sessionmaker(bind=db_engine, expire_on_commit=False)
-    with testing_session() as db:
-        op = db.scalars(select(User).where(User.email == "smirnov@misis.ru")).first()
-        if not op:
-            op = User(email="smirnov@misis.ru", full_name="Смирнов Олег", role="operator")
-            db.add(op)
-            db.commit()
+    """TestClient с сессией дежурного оператора (smirnov@misis.ru, пароль operator123)."""
     c = TestClient(app)
-    resp = c.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    resp = c.post(
+        "/api/auth/login",
+        json={"email": "smirnov@misis.ru", "password": PASSWORD_OPERATOR},
+    )
     assert resp.status_code == 200, resp.text
     return c
 

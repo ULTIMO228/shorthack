@@ -34,6 +34,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session as OrmSession, sessionmaker
 
 from app import incidents, tickets, tools
+from app.auth import hash_password
 from app.models import Event, Incident, OutboundMessage, Request, Subtask, Ticket, User
 
 
@@ -63,14 +64,19 @@ def seed_services(db_engine):
 def _make_operator(db_session: OrmSession, email: str = "smirnov@misis.ru") -> User:
     op = db_session.scalar(select(User).where(User.email == email))
     if op is None:
-        op = User(email=email, full_name="Алексей Смирнов", role="operator")
+        op = User(
+            email=email,
+            full_name="Алексей Смирнов",
+            role="operator",
+            password_hash=hash_password("operator123"),
+        )
         db_session.add(op)
         db_session.commit()
     return op
 
 
-def _login(client, email: str):
-    return client.post("/api/auth/login", json={"email": email})
+def _login(client, email: str, password: str = "operator123"):
+    return client.post("/api/auth/login", json={"email": email, "password": password})
 
 
 def _complaint(
@@ -446,7 +452,14 @@ def test_admin_incidents_list_active_first(client, db_session):
     assert client.get("/api/admin/incidents").status_code == 401
 
     # Студент
-    _login(client, "student1@edu.misis.ru")
+    db_session.add(User(
+        email="student1@edu.misis.ru",
+        full_name="Студент Один",
+        role="student",
+        password_hash=hash_password("student123"),
+    ))
+    db_session.commit()
+    _login(client, "student1@edu.misis.ru", password="student123")
     assert client.get("/api/admin/incidents").status_code == 403
 
     # Создаём два инцидента: resolved (id=1) и active (id=2)

@@ -10,11 +10,11 @@
 
 ## Technical Context
 
-**Language/Version**: JavaScript (ES2022), React 18.3, Vite 5
+**Language/Version**: TypeScript 5+, React 19.3, Next.js 16.3 (App Router) — пивот со Vite-SPA по указанию заказчика (2026-09-12); визуал по дизайн-референсу Figma Make (лого МИСИС `public/misis-logo.png`, Manrope/DM Mono, #0047FF).
 
-**Primary Dependencies**: react, react-dom (уже в `frontend/package.json`); роутер и state-библиотеки НЕ добавляются — переключение экранов состоянием App, запросы через `fetch` + обёртка `api.js`.
+**Primary Dependencies**: next, react, react-dom, lucide-react (SVG-иконки); роутер — App Router (`/` обращение, `/login`, `/cabinet`, `/admin*`), запросы через `fetch` + обёртка `lib/api.ts`.
 
-**Storage**: нет (всё в ядре); сессия — HttpOnly cookie, `fetch(..., { credentials: "include" })` через Vite-прокси `/api` → :8000 (`vite.config.js` уже настроен).
+**Storage**: нет (всё в ядре); сессия — HttpOnly cookie, `fetch(..., { credentials: "include" })` через прокси `/api` → :8000 (`next.config.ts` rewrites).
 
 **Testing**: ручной прогон сценариев quickstart; сборка `npm run build` как чек.
 
@@ -24,7 +24,7 @@
 
 **Performance Goals**: реакции UI мгновенные; ожидание ядра — спиннер «Агент разбирает обращение…» (до 60 c, SC-001 ядра).
 
-**Constraints**: тёмная тема существующего scaffold (`App.css`); без дизайн-системы и CSS-фреймворков; русский интерфейс; минимум зависимостей (CONTEXT.md).
+**Constraints**: светлая фирменная тема МИСИС по design-brief.md (CSS-переменные в `App.css`); без дизайн-системы и CSS-фреймворков; единственная новая зависимость — `lucide-react` (SVG-иконки); русский интерфейс; минимум зависимостей (CONTEXT.md).
 
 **Scale/Scope**: 3 роли экранов (гость/пользователь/оператор), ~9 представлений; демо-нагрузка.
 

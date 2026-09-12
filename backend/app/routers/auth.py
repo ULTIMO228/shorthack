@@ -9,8 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session as OrmSession
 
-from app import auth
-from app.auth import COOKIE_NAME, full_name_from_email, get_current_session, is_misis_email
+from app.auth import COOKIE_NAME, get_current_session, is_misis_email, verify_password
 from app.db import get_session
 from app.models import Session as UserSession
 from app.models import User
@@ -27,7 +26,7 @@ def login(
     response: Response,
     db: Annotated[OrmSession, Depends(get_session)],
 ) -> LoginResponse:
-    """Вход по email без пароля: новый корректный домен — автосоздание пользователя."""
+    """Вход по корпоративной почте МИСИС и паролю; автосоздание пользователей убрано."""
     email = body.email.strip().lower()
     if not is_misis_email(email):
         raise HTTPException(
@@ -35,10 +34,12 @@ def login(
             detail="Нужна корпоративная почта МИСИС (@misis.ru или @edu.misis.ru)",
         )
     user = db.scalar(select(User).where(User.email == email))
-    if user is None:
-        user = User(email=email, full_name=full_name_from_email(email), role="student")
-        db.add(user)
-        db.flush()
+    # единая ошибка для неизвестной почты и неверного пароля — не раскрываем, что email не найден
+    if user is None or not verify_password(body.password, user.password_hash):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Неверная почта или пароль",
+        )
     # гостевая сессия привязывается к пользователю — гостевой диалог сохраняется (FR-016)
     token = request.cookies.get(COOKIE_NAME)
     session = db.get(UserSession, token) if token else None

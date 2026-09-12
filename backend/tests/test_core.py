@@ -72,7 +72,8 @@ def test_get_current_user_guest_raises_401(auth_db):
 
 
 def test_get_current_user_returns_user(auth_db):
-    user = User(email="a@misis.ru", full_name="A", role="student")
+    user = User(email="a@misis.ru", full_name="A", role="student",
+                password_hash=auth.hash_password("student123"))
     auth_db.add(user)
     auth_db.flush()
     auth_db.add(UserSession(id="tok-user", user_id=user.id))
@@ -83,7 +84,8 @@ def test_get_current_user_returns_user(auth_db):
 
 
 def test_get_operator_rejects_student_and_guest(auth_db):
-    student = User(email="s@misis.ru", full_name="S", role="student")
+    student = User(email="s@misis.ru", full_name="S", role="student",
+                   password_hash=auth.hash_password("student123"))
     auth_db.add(student)
     auth_db.flush()
     auth_db.add(UserSession(id="tok-student", user_id=student.id))
@@ -100,7 +102,8 @@ def test_get_operator_rejects_student_and_guest(auth_db):
 
 
 def test_get_operator_returns_operator(auth_db):
-    operator = User(email="op@misis.ru", full_name="Op", role="operator")
+    operator = User(email="op@misis.ru", full_name="Op", role="operator",
+                    password_hash=auth.hash_password("operator123"))
     auth_db.add(operator)
     auth_db.flush()
     auth_db.add(UserSession(id="tok-op", user_id=operator.id))

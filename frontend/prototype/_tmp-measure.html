@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>m</title>
+  <link rel="stylesheet" href="assets/design-system.css">
+</head>
+<body>
+<div class="bg-decor"></div>
+<header class="header"><div class="header-in">
+  <a class="logo" href="#"><div class="logo-mark">М</div><div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div></a>
+</div></header>
+<main class="wrap" style="padding:28px 0 80px"><div class="req-card"><p>test</p></div></main>
+<script>
+window.addEventListener('load',()=>{
+  const d=document.createElement('div');d.id='measure';
+  d.textContent='cw='+document.documentElement.clientWidth+' sw='+document.documentElement.scrollWidth+' iw='+window.innerWidth+' ww='+document.querySelector('.wrap').clientWidth+' hw='+document.querySelector('.header-in').scrollWidth;
+  document.body.appendChild(d);
+});
+</script>
+</body>
+</html>

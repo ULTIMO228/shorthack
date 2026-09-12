@@ -10,11 +10,14 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session as OrmSession
 
-from app import kb, llm
+from app import auth, kb, llm
 from app.models import KbArticle, Service, User
 
 # llm остаётся импортированным в seed: тесты мокают embed через seed_module.llm,
 # а реальная индексация живёт в app.kb.index_pending_articles (T029).
+
+# Демо-пароли тестовых учёток (считаются хэш при сидировании, не хардкодятся)
+PASSWORD_BY_ROLE = {"student": "student123", "staff": "staff123", "operator": "operator123"}
 
 # email, ФИО, группа/подразделение, роль (3 студента, сотрудник, оператор)
 USERS: list[tuple[str, str, str | None, str]] = [
@@ -142,7 +145,13 @@ def seed(db: OrmSession) -> None:
     """Наполнение БД, если таблицы пусты; затем дозаполнение эмбеддингов."""
     if db.scalar(select(User).limit(1)) is None:
         db.add_all(
-            User(email=email, full_name=full_name, group_name=group, role=role)
+            User(
+                email=email,
+                full_name=full_name,
+                group_name=group,
+                role=role,
+                password_hash=auth.hash_password(PASSWORD_BY_ROLE[role]),
+            )
             for email, full_name, group, role in USERS
         )
     if db.scalar(select(Service).limit(1)) is None:

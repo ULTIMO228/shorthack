@@ -171,7 +171,7 @@ def test_guest_requests_bound_to_profile_on_login(client, monkeypatch):
     make_fake_llm(monkeypatch)
     created = client.post("/api/requests", json={"text": "Не работает вайфай MISIS-Guest"})
     assert created.status_code == 200
-    login = client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    login = client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     assert login.status_code == 200
     mine = client.get("/api/requests")
     assert mine.status_code == 200
@@ -196,7 +196,7 @@ def test_is_misis_email_accepts_valid(email):
 
 
 def test_login_rejects_double_at(client):
-    assert client.post("/api/auth/login", json={"email": "a@@misis.ru"}).status_code == 400
+    assert client.post("/api/auth/login", json={"email": "a@@misis.ru", "password": "x"}).status_code == 400
 
 
 # ---------------------------------------------------------------------------
@@ -381,7 +381,7 @@ def test_my_requests_shows_duplicate_linked_ticket(client, monkeypatch):
     assert first.status_code == 200
     second = client.post("/api/requests", json={"text": "Опять не работает вайфай MISIS-Guest"})
     assert second.json()["duplicate"] is True
-    login = client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    login = client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     assert login.status_code == 200
     mine = client.get("/api/requests")
     ids = [item["id"] for item in mine.json()]
@@ -439,15 +439,13 @@ def test_my_requests_skips_request_without_ticket(client, db_engine):
     db = _fresh(db_engine)
     db.add(UserSession(id="tok-legacy", user_id=None))
     db.commit()
-    db.add(User(email="ivanov@misis.ru", full_name="Иванов", role="student"))
-    db.commit()
-    user = db.query(User).filter_by(email="ivanov@misis.ru").one()
+    user = db.query(User).filter_by(email="ivanov@misis.ru").one()  # засидирован autouse-фикстурой
     db.add(Request(session_id="tok-legacy", user_id=user.id, channel="web",
                    raw_text="текст", masked_text="текст"))
     db.commit()
     db.close()
 
-    client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     mine = client.get("/api/requests")
     assert mine.status_code == 200
     assert mine.json() == []

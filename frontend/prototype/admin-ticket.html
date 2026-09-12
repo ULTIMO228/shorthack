@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карточка эскалации SUP-2026-0012 · Помощник поддержки МИСИС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <style>
+    .ticket-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;margin-top:20px}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+    .t-title{font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.3;margin-bottom:6px}
+    .t-meta{font-size:12.5px;color:var(--ink-2);margin-bottom:16px}
+    .summary{font-size:16px;line-height:1.6}
+    .stack{display:grid;gap:10px}
+    .kb-actions{display:flex;gap:8px;margin-top:12px}
+    .recommend b{display:block;margin-bottom:2px}
+    .incident-banner>div{min-width:0}
+    @media (max-width:768px){
+      .header-in{flex-wrap:wrap;height:auto;padding-top:10px;padding-bottom:10px;row-gap:10px}
+      .nav{order:3;width:100%;margin-left:0;flex-shrink:0}
+    }
+    @media (max-width:1100px){.ticket-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="bg-decor"></div>
+
+  <header class="header"><div class="header-in">
+    <a class="logo" href="app.html"><div class="logo-mark">М</div><div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div></a>
+    <nav class="nav">
+      <a class="nav-btn" href="app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Обращение</a>
+      <a class="nav-btn" href="cabinet.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Кабинет</a>
+      <span class="nav-label">Админка</span>
+      <a class="nav-btn" href="admin-queue.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Очередь</a>
+      <a class="nav-btn active" href="admin-ticket.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Эскалация</a>
+      <a class="nav-btn" href="admin-certs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Заказы</a>
+      <a class="nav-btn" href="admin-tools.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Инструменты</a>
+      <a class="nav-btn" href="admin-metrics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14v4M12 9v9M17 5v13"/></svg>Метрики</a>
+    </nav>
+    <div class="header-right">
+      <div class="chip-profile"><span class="chip-ava">ИИ</span><div><b>Иванов Иван</b><span>ИТ-24</span></div></div>
+      <a class="btn btn-ghost btn-sm" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>Выйти</a>
+    </div>
+  </div></header>
+
+  <main class="wrap" style="padding:28px 0 80px">
+    <div class="page-head anim" style="--i:0">
+      <div>
+        <h2>Карточка эскалации</h2>
+        <div class="sub">SUP-2026-0012 · создано сегодня, 14:30 · оператор: Смирнова Ольга</div>
+      </div>
+      <span class="updated"><i></i>Проверки выполнены в 14:31</span>
+    </div>
+
+    <div class="incident-banner anim" style="--i:1;margin-top:16px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <div><b>Активен инцидент №2 — Wi-Fi MISIS-EDU</b><small>С 14:32 · затронуто 3 обращения · сетевая группа извещена</small></div>
+      <div class="ib-actions"><a class="btn btn-white btn-sm" href="admin-queue.html">К очереди</a></div>
+    </div>
+
+    <div class="ticket-grid">
+      <!-- Левая колонка -->
+      <div class="section">
+        <div class="card anim" style="--i:2">
+          <div class="badge-row">
+            <span class="badge b-crit"><span class="dot"></span>Критично</span>
+            <span class="route-badge"><span class="route-ic r-auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4h-4"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg></span>Авто-проверка</span>
+            <span class="tag-mono">SUP-2026-0012</span>
+            <span class="badge b-crit"><span class="dot"></span>Эскалировано</span>
+          </div>
+          <h3 class="t-title">Wi-Fi MISIS-EDU не выходит в интернет в общежитии №3</h3>
+          <div class="t-meta">Иванов Иван · ИТ-24 · ivanov@edu.misis.ru · канал: чат</div>
+          <div class="card-title" style="margin-bottom:8px">Саммари</div>
+          <p class="summary">Студент сообщает: с 14:20 в общежитии №3 сеть MISIS-EDU подключается, но доступа в интернет нет — на устройстве статус «сбой сети». Автопроверка подтвердила отказ контроллера Wi-Fi общежитий: DHCP-пул исчерпан, точки доступа отвечают с задержками. Сайт и LMS работают штатно, сбой затрагивает только сегмент общежитий — обращение эскалировано оператору и привязано к инциденту №2.</p>
+        </div>
+
+        <div class="card anim" style="--i:3">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Результаты автопроверок</div>
+          <ul class="checks">
+            <li class="fail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>
+              <span>Wi-Fi MISIS-EDU <span style="color:var(--ink-2)">· точки общежитий (emulated)</span></span>
+              <small>FAIL · сеть «сбой»</small>
+            </li>
+            <li class="ok">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+              <span>Сайт МИСИС <span style="color:var(--ink-2)">· misis.ru</span></span>
+              <small>200 · 183 мс</small>
+            </li>
+            <li class="ok">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+              <span>LMS <span style="color:var(--ink-2)">· newlms</span></span>
+              <small>200 · 240 мс</small>
+            </li>
+          </ul>
+          <div class="recommend" style="margin-top:12px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+            <div><b>Рекомендация агента</b>Передать сетевой группе: расширить DHCP-пул контроллера общежитий и перезагрузить точки доступа сегмента №3. Шаблон обращения в сетевую группу сформирован автоматически.</div>
+          </div>
+        </div>
+
+        <div class="plate plate-ai anim" style="--i:4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></svg>
+          <div>
+            <b>Почему эскалировано</b>
+            Сработало правило <span class="mono">«подтверждённый сбой инфраструктуры → critical»</span>: автопроверка зафиксировала отказ критичного сервиса Wi-Fi, приоритет повышен до «Критично», обращение переведено из автоматического маршрута к оператору — Смирновой Ольге.
+            <small>Решение принято агентом без участия человека · порог правила задан администратором</small>
+          </div>
+        </div>
+
+        <details class="collap anim" style="--i:5">
+          <summary>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
+            Исходный текст и перевод
+            <svg class="chev" style="margin-left:auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="collap-body">
+            <div class="two-col">
+              <div class="orig-box">
+                <b>Оригинал · сообщение студента</b>
+                «у меня в общаге инет пропал ваще, мисис-еду коннектится но пишет сбой сети, я уже три раза перезагрузил и нифига, у соседа по комнате точно так же»
+              </div>
+              <div class="orig-box">
+                <b>Перевод ИИ · нормализованный запрос</b>
+                Проживающий общежития №3 сообщает о массовом отказе сети MISIS-EDU: подключение к точке доступа устанавливается, авторизация не проходит, ошибка «сбой сети». Перезагрузка устройств не помогает, проблема воспроизводится у нескольких жильцов.
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="collap anim" style="--i:6">
+          <summary>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Журнал действий
+            <svg class="chev" style="margin-left:auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="collap-body">
+            <ul class="journal">
+              <li>
+                <span class="j-dot"></span>
+                <time>14:30</time>
+                <p>Обращение создано<small>Иванов Иван · канал «Чат», тема определена автоматически</small></p>
+              </li>
+              <li>
+                <span class="j-dot crit"></span>
+                <time>14:31</time>
+                <p>Автопроверка завершена: Wi-Fi MISIS-EDU — сбой<small>сайт МИСИС и LMS отвечают штатно, проблема сегментная</small></p>
+              </li>
+              <li>
+                <span class="j-dot ai"></span>
+                <time>14:32</time>
+                <p>Затронутые студенты извещены<small>шаблон «Известный сбой Wi-Fi» · отправлено 2 уведомления</small></p>
+              </li>
+              <li>
+                <span class="j-dot crit"></span>
+                <time>14:33</time>
+                <p>Приоритет повышен: высокий → критичный<small>правило «подтверждённый сбой инфраструктуры»</small></p>
+              </li>
+              <li>
+                <span class="j-dot ok"></span>
+                <time>14:35</time>
+                <p>Привязано к инциденту №2<small>Wi-Fi MISIS-EDU · затронуто 3 обращения · ответственная: сетевая группа</small></p>
+              </li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <!-- Правая колонка -->
+      <aside class="aside-rail">
+        <div class="card anim" style="--i:3">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>Закрытие эскалации</div>
+          <label class="field-label" for="resolution">Резолюция</label>
+          <textarea class="textarea" id="resolution" style="min-height:150px">Сетевая группа расширила DHCP-пул контроллера общежитий и перезагрузила точки доступа сегмента №3. Авторизация восстановлена в 15:05, задержки в норме. Студенты извещены об устранении.</textarea>
+          <label class="checkbox-row"><input type="checkbox" checked>Добавить в базу знаний</label>
+          <button class="btn btn-primary" style="width:100%;margin-top:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Закрыть эскалацию</button>
+          <div class="hint">Студент получит уведомление с текстом резолюции, а решение попадёт в базу знаний для будущих обращений.</div>
+        </div>
+
+        <div class="card anim" style="--i:4">
+          <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Действия</div>
+          <div class="stack">
+            <button class="btn btn-outline" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>В базу знаний</button>
+            <button class="btn btn-outline" style="width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Уведомить затронутых</button>
+          </div>
+          <div class="kb-draft anim" style="--i:5">
+            <span class="badge b-ai"><span class="dot"></span>Черновик ИИ</span>
+            <b style="display:block;margin-top:10px;font-size:14.5px;line-height:1.4">Wi-Fi: «сбой сети» в общежитиях — что проверить в первую очередь</b>
+            <p>Если сеть MISIS-EDU подключается, но выдаёт «сбой сети», проверьте страницу статуса сервисов: при активном инциденте достаточно дождаться уведомления об устранении — повторные обращения фиксируются автоматически.</p>
+            <p>Если инцидентов нет — удалите сохранённую сеть, перезагрузите устройство и подключитесь заново. При повторной ошибке обратитесь в поддержку с указанием общежития и этажа.</p>
+            <div class="kb-actions">
+              <button class="btn btn-primary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Подтвердить</button>
+              <button class="btn btn-outline btn-sm">Отклонить</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

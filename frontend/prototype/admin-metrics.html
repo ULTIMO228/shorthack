@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Метрики · Помощник поддержки МИСИС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <style>
+    /* Компактная шапка: на 1280+ весь nav виден целиком, без горизонтальной прокрутки */
+    @media (min-width:1101px){
+      .header-in{gap:10px}
+      .nav{gap:2px;margin-left:0}
+      .nav-label{margin:0 2px 0 8px}
+      .nav-btn{padding:8px 8px}
+      .header-right{gap:8px}
+      .chip-profile{padding:4px}
+      .chip-profile div{display:none}
+    }
+    /* Мобильная шапка: nav — второй строкой, а не скрытой горизонтальной прокруткой */
+    @media (max-width:768px){
+      .header-in{flex-wrap:wrap;height:auto;padding-top:8px;padding-bottom:8px;gap:6px 10px}
+      .nav{order:3;width:100%;margin-left:0;padding-bottom:2px}
+      .header-right{margin-left:auto}
+      .chip-profile div{display:none}
+      .chip-profile{padding:4px}
+    }
+    /* Strip на мобильном — строгая сетка 2×2, трек не раздувается min-content */
+    @media (max-width:768px){
+      .bento{grid-template-columns:minmax(0,1fr)}
+      .metric-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+      .strip-item{min-width:0}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-decor"></div>
+
+  <header class="header"><div class="header-in">
+    <a class="logo" href="app.html"><div class="logo-mark">М</div><div class="logo-text"><b>Помощник поддержки</b><span>НИТУ МИСИС</span></div></a>
+    <nav class="nav">
+      <a class="nav-btn" href="app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Обращение</a>
+      <a class="nav-btn" href="cabinet.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>Кабинет</a>
+      <span class="nav-label">Админка</span>
+      <a class="nav-btn" href="admin-queue.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Очередь</a>
+      <a class="nav-btn" href="admin-ticket.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Эскалация</a>
+      <a class="nav-btn" href="admin-certs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Заказы</a>
+      <a class="nav-btn" href="admin-tools.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Инструменты</a>
+      <a class="nav-btn active" href="admin-metrics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Метрики</a>
+    </nav>
+    <div class="header-right">
+      <div class="chip-profile"><span class="chip-ava">ИИ</span><div><b>Иванов Иван</b><span>ИТ-24</span></div></div>
+      <a class="btn btn-ghost btn-sm" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Выйти</a>
+    </div>
+  </div></header>
+
+  <main class="wrap" style="padding:28px 0 80px">
+    <div class="page-head anim" style="--i:0">
+      <div>
+        <h2>Метрики</h2>
+        <p class="sub">Цифры для питча — считаются по журналу действий</p>
+      </div>
+      <span class="updated"><i></i>Журнал обновлен 12.09.2026, 14:35</span>
+    </div>
+
+    <div class="bento">
+      <div class="metric metric-lg anim" style="--i:1">
+        <span class="metric-label">Обращений без оператора</span>
+        <span class="metric-num">62,5<small>%</small></span>
+        <span class="metric-sub">10 из 16 закрыты автоматически</span>
+      </div>
+      <div class="metric anim" style="--i:2">
+        <span class="metric-label">Средняя первая реакция</span>
+        <span class="metric-num">4,8<small>сек</small></span>
+      </div>
+      <div class="metric metric-crit anim" style="--i:3">
+        <span class="metric-label">Инциденты</span>
+        <span class="metric-num">2</span>
+        <span class="metric-sub">1 активен · Wi-Fi MISIS-EDU</span>
+      </div>
+      <div class="metric-strip anim" style="--i:4">
+        <div class="strip-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          <b>16</b>обращений всего
+        </div>
+        <div class="strip-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <b>3</b>эскалации открыто
+        </div>
+        <div class="strip-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <b>5</b>заказов справок
+        </div>
+        <div class="strip-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <b>3</b>уведомлено при инциденте
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

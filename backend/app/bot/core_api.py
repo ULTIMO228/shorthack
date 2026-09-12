@@ -139,7 +139,10 @@ class CoreApiClient:
             resp = self._sys_http.get("/api/internal/tg/link", params={"chat_id": chat_id})
             if resp.status_code == 404:
                 return {"ok": False, "state": "awaiting_email", "user_id": None}
-            return self._handle_response(resp)
+            res = self._handle_response(resp)
+            if isinstance(res, dict) and "ok" not in res:
+                res["ok"] = True
+            return res
         except httpx.HTTPError as exc:
             logger.warning("Error fetching tg link for %s: %s", chat_id, exc)
             raise CoreApiError(503, str(exc))

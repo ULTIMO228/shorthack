@@ -16,6 +16,7 @@ import pytest
 from sqlalchemy.orm import Session as OrmSession, sessionmaker
 
 from app import tickets
+from app.auth import hash_password
 from app.models import Event, Incident, Request, Ticket, User
 
 
@@ -183,12 +184,8 @@ def test_metrics_requires_operator(client, db_session):
     # 1. Гость
     assert client.get("/api/admin/metrics").status_code == 401
 
-    # 2. Студент
-    student = User(email="petrova@edu.misis.ru", full_name="Петрова Анна", role="student")
-    db_session.add(student)
-    db_session.commit()
-
-    login_resp = client.post("/api/auth/login", json={"email": "petrova@edu.misis.ru"})
+    # 2. Студент (petrova@edu.misis.ru уже засидирован autouse-фикстурой)
+    login_resp = client.post("/api/auth/login", json={"email": "petrova@edu.misis.ru", "password": "student123"})
     assert login_resp.status_code == 200, login_resp.text
 
     assert client.get("/api/admin/metrics").status_code == 403

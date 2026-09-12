@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from app import kb, llm, tickets, tools
+from app.auth import hash_password
 from app.models import Event, KbArticle, Request, Session as DbSessionModel, Subtask, Ticket, User
 from app.tools import KbDraftResult
 
@@ -34,7 +35,8 @@ def make_operator(db_engine, email="smirnov@misis.ru") -> User:
     db = maker()
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=email, full_name="Смирнов Олег", role="operator")
+        user = User(email=email, full_name="Смирнов Олег", role="operator",
+                    password_hash=hash_password("operator123"))
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -48,7 +50,8 @@ def make_student(db_engine, email="ivanov@misis.ru") -> User:
     db = maker()
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
-        user = User(email=email, full_name="Иванов Иван", role="student")
+        user = User(email=email, full_name="Иванов Иван", role="student",
+                    password_hash=hash_password("student123"))
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -128,7 +131,7 @@ def test_close_without_add_to_kb_returns_null_draft(app, db_engine, db_session):
     req, ticket = create_escalation(db_session, status="в работе")
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(
         f"/api/admin/escalations/{req.id}/close",
@@ -169,7 +172,7 @@ def test_close_with_add_to_kb_creates_draft(app, db_engine, db_session, monkeypa
     monkeypatch.setattr(llm, "chat_structured", fake_chat_structured)
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(
         f"/api/admin/escalations/{req.id}/close",
@@ -215,7 +218,7 @@ def test_close_uses_dialog_and_resolution_in_prompt(app, db_engine, db_session, 
     monkeypatch.setattr(llm, "chat_structured", fake_chat_structured)
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resolution_text = "Специальное решение для теста 12345"
     resp = op_client.post(
@@ -241,7 +244,7 @@ def test_close_add_to_kb_llm_unavailable_uses_template(app, db_engine, db_sessio
     monkeypatch.setattr(llm, "chat_structured", fake_chat_structured)
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resolution = "Заменили патч-корд на коммутаторе"
     resp = op_client.post(
@@ -269,7 +272,7 @@ def test_close_sets_resolved_then_closed_from_open_status(app, db_engine, db_ses
     req, ticket = create_escalation(db_session, status="в работе")
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(
         f"/api/admin/escalations/{req.id}/close",
@@ -295,7 +298,7 @@ def test_close_non_operator_forbidden(app, db_engine, db_session):
 
     # Студент
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     resp_student = student_client.post(
         f"/api/admin/escalations/{req.id}/close",
         json={"resolution": "Готово", "add_to_kb": False},
@@ -315,7 +318,7 @@ def test_close_unknown_request_404(app, db_engine):
     """Несуществующее обращение → 404."""
     make_operator(db_engine)
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(
         "/api/admin/escalations/999999/close",
@@ -330,7 +333,7 @@ def test_close_closed_ticket_idempotent(app, db_engine, db_session):
     req, ticket = create_escalation(db_session, status="закрыта")
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(
         f"/api/admin/escalations/{req.id}/close",
@@ -365,7 +368,7 @@ def test_confirm_article_indexes_embedding(app, db_engine, db_session, monkeypat
     monkeypatch.setattr(llm, "embed", lambda text, **kw: fake_vector)
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(f"/api/admin/kb/articles/{article.id}/confirm")
     assert resp.status_code == 200, resp.text
@@ -445,7 +448,7 @@ def test_confirm_idempotent_no_second_embed(app, db_engine, db_session, monkeypa
     monkeypatch.setattr(llm, "embed", counting_embed)
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     # Первый вызов
     r1 = op_client.post(f"/api/admin/kb/articles/{article.id}/confirm")
@@ -479,7 +482,7 @@ def test_confirm_llm_unavailable_still_confirms(app, db_engine, db_session, monk
     monkeypatch.setattr(llm, "embed", failing_embed)
 
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post(f"/api/admin/kb/articles/{article.id}/confirm")
     assert resp.status_code == 200
@@ -494,7 +497,7 @@ def test_confirm_unknown_article_404(app, db_engine):
     """Несуществующая статья → 404."""
     make_operator(db_engine)
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp = op_client.post("/api/admin/kb/articles/999999/confirm")
     assert resp.status_code == 404
@@ -515,7 +518,7 @@ def test_confirm_non_operator_forbidden(app, db_engine, db_session):
     db_session.commit()
 
     student_client = TestClient(app)
-    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru"})
+    student_client.post("/api/auth/login", json={"email": "ivanov@misis.ru", "password": "student123"})
     resp_student = student_client.post(f"/api/admin/kb/articles/{article.id}/confirm")
     assert resp_student.status_code == 403
 
@@ -604,7 +607,7 @@ def test_quickstart_scenario_8_kb_learning(app, db_engine, db_session, monkeypat
 
     # Шаг 2: Оператор закрывает эскалацию с add_to_kb=true
     op_client = TestClient(app)
-    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru"})
+    op_client.post("/api/auth/login", json={"email": "smirnov@misis.ru", "password": "operator123"})
 
     resp_close = op_client.post(
         f"/api/admin/escalations/{request_id}/close",

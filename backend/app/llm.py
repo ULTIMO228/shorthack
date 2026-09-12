@@ -20,6 +20,8 @@ LLM_TIMEOUT_SEC = 25.0  # таймаут вызова LLM (plan.md, FR-022/023 �
 EMBED_TIMEOUT_SEC = 10.0  # короче: сидирование не должно надолго блокировать старт
 MAX_RETRIES = 1  # research R1: 1 retry с уточняющим промптом
 
+SYSTEM_PROMPT_RU = "Отвечай только на русском языке."
+
 EMBED_DOC_MODEL = "text-search-doc/latest"
 EMBED_QUERY_MODEL = "text-search-query/latest"
 
@@ -58,8 +60,9 @@ def generate_model_uri() -> str:
 
 
 def embedding_model_uri(kind: str) -> str:
+    env_name = "YANDEX_MODEL_EMBED_DOC" if kind == "doc" else "YANDEX_MODEL_EMBED_QUERY"
     fallback = EMBED_DOC_MODEL if kind == "doc" else EMBED_QUERY_MODEL
-    return _model_uri("", fallback, "emb")
+    return _model_uri(env_name, fallback, "emb")
 
 
 def llm_up() -> bool:
@@ -98,7 +101,7 @@ def chat(
 ) -> str:
     """Один вызов chat-completions; messages — строка или список {role, content}."""
     if isinstance(messages, str):
-        messages = [{"role": "user", "content": messages}]
+        messages = [{"role": "system", "content": SYSTEM_PROMPT_RU}, {"role": "user", "content": messages}]
     body = {"model": model or generate_model_uri(), "messages": messages, "temperature": temperature}
     data = _post("/chat/completions", body, timeout)
     try:
@@ -130,7 +133,7 @@ def chat_structured(
 ) -> SchemaT:
     """chat() + извлечение JSON + Pydantic-валидация; при сбое — 1 retry с подсказкой."""
     if isinstance(messages, str):
-        messages = [{"role": "user", "content": messages}]
+        messages = [{"role": "system", "content": SYSTEM_PROMPT_RU}, {"role": "user", "content": messages}]
     last_error = ""
     for attempt in range(MAX_RETRIES + 1):
         try:

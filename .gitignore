@@ -12,6 +12,10 @@ htmlcov/
 # App
 *.db
 .env
+.env.local
+*.env
+!*.env.example
+!.env.example
 .bot_offset
 *.bot_offset
 .bot_states

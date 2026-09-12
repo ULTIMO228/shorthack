@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход · Помощник поддержки МИСИС</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <style>
+    /* Локальная обвязка страницы входа — центрированный layout поверх дизайн-системы */
+    .page{min-height:100dvh;display:flex;flex-direction:column}
+    .back-link{
+      position:absolute;top:20px;left:24px;z-index:10;
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 13px;border-radius:var(--r-btn);
+      font-size:13.5px;font-weight:500;color:var(--ink-2);
+      transition:background-color 150ms var(--ease),color 150ms var(--ease);
+    }
+    .back-link svg{width:15px;height:15px;flex-shrink:0}
+    .back-link:hover{background:rgba(10,30,100,.06);color:var(--ink)}
+
+    .login-main{flex:1;display:grid;place-items:center;padding:76px 24px 48px}
+    .login-card{width:100%;max-width:420px;padding:30px;display:grid;gap:22px;box-shadow:var(--shadow-1)}
+    .login-head{display:flex;align-items:center;gap:14px}
+    .login-head h1{font-size:21px;font-weight:700;letter-spacing:-.015em;line-height:1.2}
+    .login-head p{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+
+    .login-form{display:grid;gap:12px}
+    .login-form .btn{margin-top:6px}
+    .btn-block{width:100%}
+
+    .divider{display:flex;align-items:center;gap:12px;font-size:12.5px;font-weight:500;color:var(--ink-2)}
+    .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line-strong)}
+
+    .guest-note{font-size:12.5px;color:var(--ink-2);line-height:1.5;text-align:center;margin-top:-8px}
+
+    .why{border-top:1px solid var(--line);padding-top:18px}
+    .why-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);margin-bottom:11px}
+    .why ul{list-style:none;display:grid;gap:10px}
+    .why li{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.45}
+    .why li svg{width:16px;height:16px;color:var(--brand);flex-shrink:0;margin-top:2px}
+
+    .login-footer{
+      border-top:1px solid var(--line);
+      padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      font-size:12px;color:var(--ink-2);
+    }
+    @media (max-width:520px){
+      .back-link{left:16px}
+      .login-main{padding:68px 16px 40px}
+      .login-card{padding:24px 20px}
+      .login-footer{justify-content:center;text-align:center}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-decor"></div>
+  <div class="page">
+
+    <a class="back-link anim" style="--i:0" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      На главную
+    </a>
+
+    <main class="login-main">
+      <div class="login-card card">
+
+        <div class="login-head anim" style="--i:1">
+          <div class="logo-mark">М</div>
+          <div>
+            <h1>Вход по почте МИСИС</h1>
+            <p>Помощник поддержки · НИТУ МИСИС</p>
+          </div>
+        </div>
+
+        <form class="login-form anim" style="--i:2" action="app.html" method="get">
+          <div>
+            <label class="field-label" for="email">Корпоративная почта</label>
+            <input class="input" type="email" id="email" name="email" placeholder="ivanov@edu.misis.ru" autocomplete="off">
+            <p class="hint">Пароль не нужен — демо-режим. Домены @misis.ru и @edu.misis.ru.</p>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+            Войти
+          </button>
+        </form>
+
+        <div class="divider anim" style="--i:3">или</div>
+
+        <div class="anim" style="--i:4">
+          <a class="btn btn-ghost btn-block" href="app.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Продолжить как гость
+          </a>
+          <p class="guest-note">Гостю доступны обращения и диалог с помощником. Кабинет, история обращений и заказ справок — после входа по почте.</p>
+        </div>
+
+        <div class="why anim" style="--i:5">
+          <div class="why-title">Кому нужен вход</div>
+          <ul>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+              <span><b>История обращений</b> — все тикеты с номерами и статусами в одном месте</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              <span><b>Заказ справок</b> — пять справок онлайн, без очереди в деканат</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>
+              <span><b>Статусы заказов</b> — от «Не обработана» до «Забрана», без звонков в учебный офис</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="login-footer anim" style="--i:6">
+      <span>Помощник поддержки · НИТУ МИСИС — демо-прототип</span>
+      <span>Демо-режим: пароль не требуется</span>
+    </footer>
+
+  </div>
+</body>
+</html>
