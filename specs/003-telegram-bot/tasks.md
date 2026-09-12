@@ -44,7 +44,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] В backend/app/bot/handlers.py — сценарий S2: текст в `idle` → T9 → `POST /api/requests {"text", "channel":"telegram"}` → маппинг `reactions[]` по kind (T10/T11/T14/текст как есть), `duplicate=true` → префикс «похоже на вашу заявку {number}», несколько подзадач → сообщения с префиксом `{i}/{n}:`; `clarification` → state=`dialog:<request_id>` (зависит T006)
+- [x] T007 [US1] В backend/app/bot/handlers.py — сценарий S2: текст в `idle` → T9 → `POST /api/requests {"text", "channel":"telegram"}` → маппинг `reactions[]` по kind (T10/T11/T14/текст как есть), `duplicate=true` → префикс «похоже на вашу заявку {number}», несколько подзадач → сообщения с префиксом `{i}/{n}:`; `clarification` → state=`dialog:<request_id>` (зависит T006)
 
 **Checkpoint**: полное обращение проходит в чате.
 
@@ -72,7 +72,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 3
 
-- [ ] T009 [US3] В backend/app/bot/handlers.py — сценарий S2b: state `dialog:<request_id>` → текст → `POST /api/requests/{id}/reply` → реакции как в S2; не-clarification → state=`idle`; `/cancel` → state=`idle` + «Текущее действие отменено»; 409 → state=`idle` + сообщение о завершении диалога (зависит T007)
+- [x] T009 [US3] В backend/app/bot/handlers.py — сценарий S2b: state `dialog:<request_id>` → текст → `POST /api/requests/{id}/reply` → реакции как в S2; не-clarification → state=`idle`; `/cancel` → state=`idle` + «Текущее действие отменено»; 409 → state=`idle` + сообщение о завершении диалога (зависит T007)
 
 **Checkpoint**: диалог из 2 раундов проходит без повторного описания.
 
@@ -86,7 +86,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 4
 
-- [ ] T010 [US4] В backend/app/bot/handlers.py — сценарий S4: `/certs` → каталог (`GET /api/certs/catalog`) сообщением с K1 + «Ваши заказы» (`GET /api/certs/orders`); callback `cert:<type>` → K2; `cert_order:<type>` → `POST /api/certs/orders` → T14 через `editMessageText`; `cert:my` → обновить список заказов; `/status` (S3): `GET /api/requests` → T12 или до 10 строк `{number} · {дата} · {status} · {summary}` + строка 🔴 при инциденте; `answerCallbackQuery` на все callback (зависит T006)
+- [x] T010 [US4] В backend/app/bot/handlers.py — сценарий S4: `/certs` → каталог (`GET /api/certs/catalog`) сообщением с K1 + «Ваши заказы» (`GET /api/certs/orders`); callback `cert:<type>` → K2; `cert_order:<type>` → `POST /api/certs/orders` → T14 через `editMessageText`; `cert:my` → обновить список заказов; `/status` (S3): `GET /api/requests` → T12 или до 10 строк `{number} · {дата} · {status} · {summary}` + строка 🔴 при инциденте; `answerCallbackQuery` на все callback (зависит T006)
 
 **Checkpoint**: заказ справки кнопками, паритет каналов (бот/сайт/админка).
 
@@ -100,7 +100,7 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ### Implementation for User Story 5
 
-- [ ] T011 [US5] В backend/app/bot/main.py — параллельный цикл outbox: каждые 10 c `GET /api/internal/outbound?status=pending` → `sendMessage` по `chat_id` записи (дежурный = `TG_DUTY_CHAT_ID`) → `POST /api/internal/outbound/{id}/ack {"status":"sent"}`; ошибка отправки → ack `failed` + лог; тексты не изменять (зависит T001, T002, T003)
+- [x] T011 [US5] В backend/app/bot/main.py — параллельный цикл outbox: каждые 10 c `GET /api/internal/outbound?status=pending` → `sendMessage` по `chat_id` записи (дежурный = `TG_DUTY_CHAT_ID`) → `POST /api/internal/outbound/{id}/ack {"status":"sent"}`; ошибка отправки → ack `failed` + лог; тексты не изменять (зависит T001, T002, T003)
 
 **Checkpoint**: инцидент доезжает дежурному ≤ 1 мин; ack-статусы корректны.
 
@@ -108,9 +108,9 @@ description: "Задачи реализации фичи 003 — Telegram-бот
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T012 [P] Создать backend/tests/test_bot_handlers.py: юнит-тесты без сети (моки tg.py/core_api.py) — разбор команд, переходы автомата (привязка, диалог, /cancel), форматирование /status и /certs, разбиение >4096, префиксы i/n и дубля
-- [ ] T013 Границы по контракту §5: фото/голос/файлы → «только текст»; группы → молчание; ядро недоступно → T13 без ретрая; рестарт бота → offset + перелогин прозрачно
-- [ ] T014 Полный прогон приёмочного чек-листа contracts/bot-contract.md §6 (7 пунктов) + quickstart.md (7 сценариев)
+- [x] T012 [P] Создать backend/tests/test_bot_handlers.py: юнит-тесты без сети (моки tg.py/core_api.py) — разбор команд, переходы автомата (привязка, диалог, /cancel), форматирование /status и /certs, разбиение >4096, префиксы i/n и дубля
+- [x] T013 Границы по контракту §5: фото/голос/файлы → «только текст»; группы → молчание; ядро недоступно → T13 без ретрая; рестарт бота → offset + перелогин прозрачно
+- [x] T014 Полный прогон приёмочного чек-листа contracts/bot-contract.md §6 (7 пунктов) + quickstart.md (7 сценариев)
 
 ---
 
